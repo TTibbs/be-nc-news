@@ -4,6 +4,7 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index.js");
 const endpoints = require("../endpoints.json");
+const { toBeSortedBy } = require("jest-sorted");
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -100,14 +101,18 @@ describe("GET: 200 /api/articles", () => {
       .then(({ body }) => {
         const articles = body.articles;
         expect(articles).toHaveLength(13);
-        const articlesSortedByDate = articles.sort((a, b) =>
-          a.created_at.localeCompare(b.created_at)
-        );
-        expect(articlesSortedByDate).toEqual(articles);
+        expect(articles).toBeSortedBy("created_at", {
+          descending: true,
+        });
         articles.forEach((article) => {
-          expect(article).not.toContain(article.body);
-          expect(typeof article.comment_count).toBe("string");
-          expect(typeof article.created_at).toBe("string");
+          expect(article).not.toHaveProperty("body");
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
         });
       });
   });
