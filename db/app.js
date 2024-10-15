@@ -2,9 +2,16 @@ const express = require("express");
 const {
   getTopics,
   getArticleById,
-} = require("./controllers/nc-news.controllers");
+  getArticles,
+} = require("./controllers/nc-news.controllers.js");
 const app = express();
 const endpoints = require("../endpoints.json");
+const {
+  psqlErrorHandler,
+  customErrorHandler,
+  serverErrorHandler,
+  inputErrorHandler,
+} = require("./errors/index.js");
 
 app.get("/api", (req, res) => {
   res.status(200).send({ endpoints: endpoints });
@@ -14,18 +21,12 @@ app.get("/api/topics", getTopics);
 
 app.get("/api/articles/:article_id", getArticleById);
 
-app.all("/api/*", (req, res, next) => {
-  res.status(404).send({ msg: "Invalid input" });
-});
+app.all("/api/*", inputErrorHandler);
 
-app.use((err, req, res, next) => {
-  if (err.status && err.msg) {
-    res.status(err.status).send({ msg: err.msg });
-  }
-});
+app.use(psqlErrorHandler);
 
-app.use((err, req, res, next) => {
-  res.status(500).send({ msg: "Internal server error" });
-});
+app.use(customErrorHandler);
+
+app.use(serverErrorHandler);
 
 module.exports = app;
