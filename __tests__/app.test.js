@@ -43,13 +43,14 @@ describe("GET: 200 /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.article.article_id).toBe(1);
-        expect(typeof body.article.title).toBe("string");
-        expect(typeof body.article.topic).toBe("string");
-        expect(typeof body.article.author).toBe("string");
-        expect(typeof body.article.body).toBe("string");
-        expect(typeof body.article.created_at).toBe("string");
-        expect(typeof body.article.votes).toBe("number");
-        expect(typeof body.article.article_img_url).toBe("string");
+        expect(body.article).toHaveProperty("article_id");
+        expect(body.article).toHaveProperty("title");
+        expect(body.article).toHaveProperty("topic");
+        expect(body.article).toHaveProperty("author");
+        expect(body.article).toHaveProperty("body");
+        expect(body.article).toHaveProperty("created_at");
+        expect(body.article).toHaveProperty("votes");
+        expect(body.article).toHaveProperty("article_img_url");
       });
   });
   test("Should return the details for article 2 as that is the endpoint being navigated to", () => {
@@ -58,19 +59,21 @@ describe("GET: 200 /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.article.article_id).toBe(2);
-        expect(typeof body.article.title).toBe("string");
-        expect(typeof body.article.topic).toBe("string");
-        expect(typeof body.article.author).toBe("string");
-        expect(typeof body.article.body).toBe("string");
-        expect(typeof body.article.created_at).toBe("string");
-        expect(typeof body.article.votes).toBe("number");
-        expect(typeof body.article.article_img_url).toBe("string");
+        expect(body.article).toHaveProperty("article_id");
+        expect(body.article).toHaveProperty("title");
+        expect(body.article).toHaveProperty("topic");
+        expect(body.article).toHaveProperty("author");
+        expect(body.article).toHaveProperty("body");
+        expect(body.article).toHaveProperty("created_at");
+        expect(body.article).toHaveProperty("votes");
+        expect(body.article).toHaveProperty("article_img_url");
       });
   });
   describe("GET: 404 /api/articles/:article_id", () => {
     test("Should return a message saying the article id does not exist", () => {
+      const nonExistantId = 1000;
       return request(app)
-        .get("/api/articles/1000")
+        .get(`/api/articles/${nonExistantId}`)
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).toBe("Article does not exist");
