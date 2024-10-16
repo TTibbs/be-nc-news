@@ -9,6 +9,8 @@ const { toBeSortedBy } = require("jest-sorted");
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
+let test_article_id = 1;
+
 describe("GET: /api/topics", () => {
   test("Should return an array of objects containing topics slug and description properties", () => {
     return request(app)
@@ -188,13 +190,127 @@ describe("GET: 200 /api/articles/:article_id/comments", () => {
     });
   });
   describe("GET: 400 /api/articles/:article_id/comments", () => {
-    test("Should return an error message when article_id does not exist", () => {
+    test("Should return an error message when article_id is invalid data type", () => {
       return request(app)
         .get("/api/articles/notAnId/comments")
         .expect(400)
         .then(({ body }) => {
           const errMsg = body.msg;
           expect(errMsg).toBe("Bad request");
+        });
+    });
+  });
+});
+
+describe("POST METHODS /api/articles/:article_id/comments", () => {
+  describe("POST: 201", () => {
+    test("Should successfully post a new comment to the given article id", () => {
+      const addedComment = {
+        username: "lurker",
+        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+      };
+      const comment = {
+        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        votes: 123,
+        author: "lurker",
+        article_id: 3,
+      };
+      test_article_id = 3;
+      return request(app)
+        .post(`/api/articles/${test_article_id}/comments`)
+        .send(addedComment)
+        .expect(201)
+        .then(({ body }) => {
+          const newComment = body.newComment;
+          expect(newComment.body).toBe(comment.body);
+          expect(newComment.comment_id).toBe(19);
+          expect(newComment.article_id).toBe(3);
+          expect(newComment.author).toBe("lurker");
+          expect(newComment).toHaveProperty("created_at");
+          expect(newComment).toHaveProperty("votes");
+        });
+    });
+    test("Should successfully post a new comment when it has extra properties", () => {
+      const addedComment = {
+        username: "lurker",
+        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        author: "lurker",
+        name: "Please work",
+      };
+      const comment = {
+        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        votes: 123,
+        article_id: 3,
+      };
+      test_article_id = 3;
+      return request(app)
+        .post(`/api/articles/${test_article_id}/comments`)
+        .send(addedComment)
+        .expect(201)
+        .then(({ body }) => {
+          const newComment = body.newComment;
+          expect(newComment.body).toBe(comment.body);
+          expect(newComment.comment_id).toBe(19);
+          expect(newComment.article_id).toBe(3);
+          expect(newComment).toHaveProperty("created_at");
+          expect(newComment).toHaveProperty("votes");
+        });
+    });
+  });
+  describe("POST: 400", () => {
+    test("Should return an error message when the article_id type is invalid", () => {
+      const addedComment = {
+        username: "lurker",
+        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+      };
+      test_article_id = "notAnId";
+      return request(app)
+        .post("/api/articles/notAnId/comments")
+        .send(addedComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when there is no given properties", () => {
+      const addedComment = {};
+      test_article_id = 3;
+      return request(app)
+        .post(`/api/articles/${test_article_id}/comments`)
+        .send(addedComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when article id does not exist", () => {
+      const addedComment = {
+        username: "notValid",
+        body: "This should not work",
+      };
+      test_article_id = 3;
+      return request(app)
+        .post(`/api/articles/${test_article_id}/comments`)
+        .send(addedComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("POST: 404", () => {
+    test("Should return an error message when article id does not exist", () => {
+      const addedComment = {
+        username: "lurker",
+        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+      };
+      test_article_id = 1000;
+      return request(app)
+        .post(`/api/articles/${test_article_id}/comments`)
+        .send(addedComment)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
         });
     });
   });
