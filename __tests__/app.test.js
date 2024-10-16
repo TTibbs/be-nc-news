@@ -5,11 +5,11 @@ const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index.js");
 const endpoints = require("../endpoints.json");
 const { toBeSortedBy } = require("jest-sorted");
+let test_article_id = 1;
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
-let test_article_id = 1;
 
 describe("GET: /api/topics", () => {
   test("Should return an array of objects containing topics slug and description properties", () => {
@@ -17,8 +17,9 @@ describe("GET: /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then(({ body }) => {
-        expect(body.topics.length).toBe(3);
-        body.topics.forEach((topic) => {
+        const topics = body.topics;
+        expect(topics.length).toBe(3);
+        topics.forEach((topic) => {
           expect(typeof topic.description).toBe("string");
           expect(typeof topic.slug).toBe("string");
         });
@@ -27,7 +28,7 @@ describe("GET: /api/topics", () => {
 });
 
 describe("GET: /api", () => {
-  test("GET: 200 - returns with valid endpoints that are available for users", () => {
+  test("Should return with valid endpoints that are available for users", () => {
     return request(app)
       .get("/api")
       .expect(200)
@@ -39,51 +40,46 @@ describe("GET: /api", () => {
   });
 });
 
-describe("GET: 200 /api/articles/:article_id", () => {
-  test("Should return the details for article 1 as that is the endpoint being navigated to", () => {
-    return request(app)
-      .get("/api/articles/1")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.article.article_id).toBe(1);
-        expect(body.article).toHaveProperty("article_id");
-        expect(body.article).toHaveProperty("title");
-        expect(body.article).toHaveProperty("topic");
-        expect(body.article).toHaveProperty("author");
-        expect(body.article).toHaveProperty("body");
-        expect(body.article).toHaveProperty("created_at");
-        expect(body.article).toHaveProperty("votes");
-        expect(body.article).toHaveProperty("article_img_url");
-      });
-  });
-  test("Should return the details for article 2 as that is the endpoint being navigated to", () => {
-    return request(app)
-      .get("/api/articles/2")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.article.article_id).toBe(2);
-        expect(body.article).toHaveProperty("article_id");
-        expect(body.article).toHaveProperty("title");
-        expect(body.article).toHaveProperty("topic");
-        expect(body.article).toHaveProperty("author");
-        expect(body.article).toHaveProperty("body");
-        expect(body.article).toHaveProperty("created_at");
-        expect(body.article).toHaveProperty("votes");
-        expect(body.article).toHaveProperty("article_img_url");
-      });
-  });
-  describe("GET: 404 /api/articles/:article_id", () => {
-    test("Should return a message saying the article id does not exist", () => {
-      const nonExistantId = 1000;
+describe("GET: /api/articles/:article_id", () => {
+  describe("GET: 200", () => {
+    test("Should return the details for article 1 as that is the endpoint being navigated to", () => {
+      test_article_id = 1;
       return request(app)
-        .get(`/api/articles/${nonExistantId}`)
-        .expect(404)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
         .then(({ body }) => {
-          expect(body.msg).toBe("Article does not exist");
+          const article = body.article;
+          expect(article.article_id).toBe(1);
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("body");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
+        });
+    });
+    test("Should return the details for article 2 as that is the endpoint being navigated to", () => {
+      test_article_id = 2;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          expect(article.article_id).toBe(2);
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("body");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
         });
     });
   });
-  describe("GET 400: /api/articles/:article_id", () => {
+  describe("GET 400", () => {
     test("Should return a message saying when the endpoint data type is invalid", () => {
       return request(app)
         .get("/api/articles/not_an_id")
@@ -93,32 +89,45 @@ describe("GET: 200 /api/articles/:article_id", () => {
         });
     });
   });
+  describe("GET: 404", () => {
+    test("Should return an error message if the given article id doesn't exist", () => {
+      const nonExistantId = 1000;
+      return request(app)
+        .get(`/api/articles/${nonExistantId}`)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
+        });
+    });
+  });
 });
 
-describe("GET: 200 /api/articles", () => {
-  test("Should return the articles array sorted in descending order and without a body property", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        const articles = body.articles;
-        expect(articles).toHaveLength(13);
-        expect(articles).toBeSortedBy("created_at", {
-          descending: true,
+describe("GET: /api/articles", () => {
+  describe("GET: 200s", () => {
+    test("Should return the articles array sorted in descending order and without a body property", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          const articles = body.articles;
+          expect(articles).toHaveLength(13);
+          expect(articles).toBeSortedBy("created_at", {
+            descending: true,
+          });
+          articles.forEach((article) => {
+            expect(article).not.toHaveProperty("body");
+            expect(article).toHaveProperty("article_id");
+            expect(article).toHaveProperty("title");
+            expect(article).toHaveProperty("topic");
+            expect(article).toHaveProperty("author");
+            expect(article).toHaveProperty("created_at");
+            expect(article).toHaveProperty("votes");
+            expect(article).toHaveProperty("article_img_url");
+          });
         });
-        articles.forEach((article) => {
-          expect(article).not.toHaveProperty("body");
-          expect(article).toHaveProperty("article_id");
-          expect(article).toHaveProperty("title");
-          expect(article).toHaveProperty("topic");
-          expect(article).toHaveProperty("author");
-          expect(article).toHaveProperty("created_at");
-          expect(article).toHaveProperty("votes");
-          expect(article).toHaveProperty("article_img_url");
-        });
-      });
+    });
   });
-  describe("GET: 400 /api/articles", () => {
+  describe("GET: 400s", () => {
     test("Should return a message saying the URL endpoint is invalid", () => {
       return request(app)
         .get("/api/wrong_endpoint")
@@ -130,45 +139,48 @@ describe("GET: 200 /api/articles", () => {
   });
 });
 
-describe("GET: 200 /api/articles/:article_id/comments", () => {
-  test("Should return an empty array of comments when the given article_id has no comments", () => {
-    return request(app)
-      .get("/api/articles/2/comments")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.articleComments).toEqual([]);
-      });
-  });
-  test("Should return an array of comments when the given article_id has comments", () => {
-    return request(app)
-      .get("/api/articles/1/comments")
-      .expect(200)
-      .then(({ body }) => {
-        const articleComments = body.articleComments;
-        expect(articleComments).toHaveLength(11);
-        articleComments.forEach((articleComment) => {
-          expect(articleComment).toHaveProperty(
-            "comment_id",
-            expect.any(Number)
-          );
-          expect(articleComment).toHaveProperty("body", expect.any(String));
-          expect(articleComment).toHaveProperty(
-            "article_id",
-            expect.any(Number)
-          );
-          expect(articleComment).toHaveProperty("author", expect.any(String));
-          expect(articleComment).toHaveProperty("votes", expect.any(Number));
-          expect(articleComment).toHaveProperty(
-            "created_at",
-            expect.any(String)
-          );
-        });
-      });
-  });
-  describe("GET: 200 /api/articles/:article_id/comments", () => {
-    test("Should return the comments array in descending order", () => {
+describe("GET: /api/articles/:article_id/comments", () => {
+  describe("GET: 200s", () => {
+    test("Should return an empty array of comments when the given article_id has no comments", () => {
+      test_article_id = 2;
       return request(app)
-        .get("/api/articles/1/comments")
+        .get(`/api/articles/${test_article_id}/comments`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articleComments).toEqual([]);
+        });
+    });
+    test("Should return an array of comments when the given article_id has comments", () => {
+      test_article_id = 1;
+      return request(app)
+        .get(`/api/articles/${test_article_id}/comments`)
+        .expect(200)
+        .then(({ body }) => {
+          const articleComments = body.articleComments;
+          expect(articleComments).toHaveLength(11);
+          articleComments.forEach((articleComment) => {
+            expect(articleComment).toHaveProperty(
+              "comment_id",
+              expect.any(Number)
+            );
+            expect(articleComment).toHaveProperty("body", expect.any(String));
+            expect(articleComment).toHaveProperty(
+              "article_id",
+              expect.any(Number)
+            );
+            expect(articleComment).toHaveProperty("author", expect.any(String));
+            expect(articleComment).toHaveProperty("votes", expect.any(Number));
+            expect(articleComment).toHaveProperty(
+              "created_at",
+              expect.any(String)
+            );
+          });
+        });
+    });
+    test("Should return the comments array in descending order", () => {
+      test_article_id = 1;
+      return request(app)
+        .get(`/api/articles/${test_article_id}/comments`)
         .expect(200)
         .then(({ body }) => {
           const articleComments = body.articleComments;
@@ -178,21 +190,11 @@ describe("GET: 200 /api/articles/:article_id/comments", () => {
         });
     });
   });
-  describe("GET: 404 /api/articles/:article_id/comments", () => {
-    test("Should return an error message when article_id does not exist", () => {
-      return request(app)
-        .get("/api/articles/1234/comments")
-        .expect(404)
-        .then(({ body }) => {
-          const errMsg = body.msg;
-          expect(errMsg).toBe("Article does not exist");
-        });
-    });
-  });
-  describe("GET: 400 /api/articles/:article_id/comments", () => {
+  describe("GET: 400s", () => {
     test("Should return an error message when article_id is invalid data type", () => {
+      test_article_id = "notAnId";
       return request(app)
-        .get("/api/articles/notAnId/comments")
+        .get(`/api/articles/${test_article_id}/comments`)
         .expect(400)
         .then(({ body }) => {
           const errMsg = body.msg;
@@ -200,10 +202,22 @@ describe("GET: 200 /api/articles/:article_id/comments", () => {
         });
     });
   });
+  describe("GET: 404s", () => {
+    test("Should return an error message when article_id does not exist", () => {
+      test_article_id = 1234;
+      return request(app)
+        .get(`/api/articles/${test_article_id}/comments`)
+        .expect(404)
+        .then(({ body }) => {
+          const errMsg = body.msg;
+          expect(errMsg).toBe("Article does not exist");
+        });
+    });
+  });
 });
 
-describe("POST METHODS /api/articles/:article_id/comments", () => {
-  describe("POST: 201", () => {
+describe("POST: /api/articles/:article_id/comments", () => {
+  describe("POST: 201s", () => {
     test("Should successfully post a new comment to the given article id", () => {
       const addedComment = {
         username: "lurker",
@@ -257,7 +271,7 @@ describe("POST METHODS /api/articles/:article_id/comments", () => {
         });
     });
   });
-  describe("POST: 400", () => {
+  describe("POST: 400s", () => {
     test("Should return an error message when the article_id type is invalid", () => {
       const addedComment = {
         username: "lurker",
@@ -298,7 +312,7 @@ describe("POST METHODS /api/articles/:article_id/comments", () => {
         });
     });
   });
-  describe("POST: 404", () => {
+  describe("POST: 404s", () => {
     test("Should return an error message when article id does not exist", () => {
       const addedComment = {
         username: "lurker",
