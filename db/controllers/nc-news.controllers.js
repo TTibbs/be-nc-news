@@ -5,6 +5,7 @@ const {
   fetchArticleCommentsById,
   writeArticleCommentById,
   fetchUserByUsername,
+  selectArticleIdToPatch,
 } = require("../models/nc-news.models");
 
 exports.getTopics = (req, res, next) => {
@@ -62,6 +63,23 @@ exports.postArticleCommentById = (req, res, next) => {
     .then((result) => {
       const newComment = result[1];
       res.status(201).send({ newComment });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.patchArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+  const promises = [
+    fetchArticleById(article_id),
+    selectArticleIdToPatch(inc_votes, article_id),
+  ];
+  Promise.all(promises)
+    .then((result) => {
+      const updatedArticle = result[1];
+      res.status(202).send({ updatedArticle });
     })
     .catch((err) => {
       next(err);

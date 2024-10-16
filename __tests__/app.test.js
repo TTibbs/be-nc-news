@@ -10,7 +10,6 @@ let test_article_id = 1;
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
-
 describe("GET: /api/topics", () => {
   test("Should return an array of objects containing topics slug and description properties", () => {
     return request(app)
@@ -277,7 +276,6 @@ describe("POST: /api/articles/:article_id/comments", () => {
         username: "lurker",
         body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
       };
-      test_article_id = "notAnId";
       return request(app)
         .post("/api/articles/notAnId/comments")
         .send(addedComment)
@@ -323,6 +321,82 @@ describe("POST: /api/articles/:article_id/comments", () => {
         .post(`/api/articles/${test_article_id}/comments`)
         .send(addedComment)
         .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
+        });
+    });
+  });
+});
+
+describe("PATCH: /api/articles/:article_id", () => {
+  describe("PATCH: 202", () => {
+    test("Should increase the vote property and return the updated article", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(202)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          const updatedArticle = body.updatedArticle;
+          console.log(updatedArticle);
+          expect(updatedArticle.article_id).toBe(3);
+          expect(updatedArticle.title).toBe(
+            "Eight pug gifs that remind me of mitch"
+          );
+          expect(updatedArticle.topic).toBe("mitch");
+          expect(updatedArticle.author).toBe("icellusedkars");
+          expect(updatedArticle.body).toBe("some gifs");
+          expect(updatedArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+          expect(updatedArticle.votes).toBe(10);
+          expect(updatedArticle.article_img_url).toBe(
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          );
+        });
+    });
+  });
+  describe("PATCH: 400s", () => {
+    test("Should return an error message when the key is invalid", () => {
+      const updatedVotes = { wrong_key: 10 };
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given key/prop is missing", () => {
+      const updatedVotes = "10";
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given article id is invalid", () => {
+      const updatedVotes = { inc_votes: 10 };
+      return request(app)
+        .patch("/api/articles/notAnId")
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("PATCH: 404", () => {
+    test("Should return an error message when the given article id doesn't exist", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_article_id = 1000;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(404)
+        .send(updatedVotes)
         .then(({ body }) => {
           expect(body.msg).toBe("Article does not exist");
         });
