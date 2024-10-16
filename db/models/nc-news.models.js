@@ -1,4 +1,5 @@
 const db = require("../connection");
+const { dataBaseError } = require("../errors");
 
 exports.fetchTopics = () => {
   return db.query(`SELECT * FROM topics;`).then(({ rows }) => {
@@ -51,5 +52,27 @@ exports.fetchArticleCommentsById = (article_id) => {
     )
     .then(({ rows }) => {
       return rows;
+    });
+};
+
+exports.writeArticleCommentById = (article_id, username, body) => {
+  return db
+    .query(
+      `INSERT INTO comments (article_id, author, body) VALUES ($1, $2, $3) RETURNING *;`,
+      [article_id, username, body]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+exports.fetchUserByUsername = (username) => {
+  if (!username) {
+    return dataBaseError;
+  }
+  return db
+    .query(`SELECT * FROM users WHERE username = $1`, [username])
+    .then(({ rows }) => {
+      return rows[0];
     });
 };

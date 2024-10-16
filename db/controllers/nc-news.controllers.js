@@ -3,6 +3,8 @@ const {
   fetchArticleById,
   fetchArticles,
   fetchArticleCommentsById,
+  writeArticleCommentById,
+  fetchUserByUsername,
 } = require("../models/nc-news.models");
 
 exports.getTopics = (req, res, next) => {
@@ -42,6 +44,24 @@ exports.getArticleCommentsById = (req, res, next) => {
     .then((results) => {
       const articleComments = results[0];
       res.status(200).send({ articleComments });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postArticleCommentById = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+  const promises = [
+    fetchArticleById(article_id),
+    writeArticleCommentById(article_id, username, body),
+    fetchUserByUsername(username),
+  ];
+  Promise.all(promises)
+    .then((result) => {
+      const newComment = result[1];
+      res.status(201).send({ newComment });
     })
     .catch((err) => {
       next(err);
