@@ -8,6 +8,7 @@ const {
   selectArticleIdToPatch,
   selectCommentToDelete,
   selectCommentById,
+  selectUsers,
 } = require("../models/nc-news.models");
 
 exports.getTopics = (req, res, next) => {
@@ -31,6 +32,16 @@ exports.getArticles = (req, res, next) => {
   fetchArticles()
     .then((articles) => {
       res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUsers = (req, res, next) => {
+  selectUsers()
+    .then((users) => {
+      res.status(200).send({ users });
     })
     .catch((err) => {
       next(err);
@@ -96,7 +107,6 @@ exports.deleteCommentById = (req, res, next) => {
   ];
   Promise.all(promises)
     .then((result) => {
-      console.log(result);
       const successfulDeleteMsg = "Comment deleted";
       res.status(202).send({ msg: successfulDeleteMsg });
     })
