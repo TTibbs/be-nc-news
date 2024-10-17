@@ -554,18 +554,15 @@ describe("PATCH: /api/articles/:article_id", () => {
 });
 
 describe("DELETE: /api/comments/:comment_id", () => {
-  describe("DELETE: 202", () => {
+  describe("DELETE: 204", () => {
     test("Should successfully delete the comment with the id given", () => {
       test_comment_id = 3;
       return request(app)
         .delete(`/api/comments/${test_comment_id}`)
-        .expect(202)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Comment deleted");
-        });
+        .expect(204)
     });
   });
-  describe("DELETE: 204", () => {
+  describe("DELETE: 404", () => {
     test("Should return an error message when the comment id does not exist", () => {
       const test_comment_id = 9999;
       return request(app)

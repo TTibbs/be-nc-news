@@ -108,8 +108,7 @@ exports.deleteCommentById = (req, res, next) => {
   ];
   Promise.all(promises)
     .then((result) => {
-      const successfulDeleteMsg = "Comment deleted";
-      res.status(202).send({ msg: successfulDeleteMsg });
+      res.status(204).send();
     })
     .catch((err) => {
       next(err);
