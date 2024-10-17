@@ -6,6 +6,7 @@ const data = require("../db/data/test-data/index.js");
 const endpoints = require("../endpoints.json");
 const { toBeSortedBy } = require("jest-sorted");
 let test_article_id = 1;
+let test_comment_id = 1;
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -339,7 +340,6 @@ describe("PATCH: /api/articles/:article_id", () => {
         .send(updatedVotes)
         .then(({ body }) => {
           const updatedArticle = body.updatedArticle;
-          console.log(updatedArticle);
           expect(updatedArticle.article_id).toBe(3);
           expect(updatedArticle.title).toBe(
             "Eight pug gifs that remind me of mitch"
@@ -400,6 +400,33 @@ describe("PATCH: /api/articles/:article_id", () => {
         .then(({ body }) => {
           expect(body.msg).toBe("Article does not exist");
         });
+    });
+  });
+});
+
+describe("DELETE: /api/comments/:comment_id", () => {
+  describe("DELETE: 202", () => {
+    test("Should successfully delete the comment with the id given", () => {
+      test_comment_id = 3;
+      return request(app)
+        .delete(`/api/comments/${test_comment_id}`)
+        .expect(202)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Comment deleted");
+        });
+    });
+  });
+  describe("DELETE: 204", () => {
+    test("Should return an error message when the comment id does not exist", () => {
+      const test_comment_id = 9999;
+      return request(app)
+        .delete(`/api/comments/${test_comment_id}`)
+        .expect(404);
+    });
+  });
+  describe("DELETE: 400", () => {
+    test("Should return an error message when the comment id is an invalid type", () => {
+      return request(app).delete("/api/comments/notAnId").expect(400);
     });
   });
 });
