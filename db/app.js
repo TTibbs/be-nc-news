@@ -1,8 +1,9 @@
 const express = require("express");
 const {
   getTopics,
-  getArticleById,
   getArticles,
+  getUsers,
+  getArticleById,
   getArticleCommentsById,
   postArticleCommentById,
   patchArticleById,
@@ -27,6 +28,8 @@ app.get("/api/topics", getTopics);
 
 app.get("/api/articles", getArticles);
 
+app.get("/api/users", getUsers);
+
 app.get("/api/articles/:article_id", getArticleById);
 
 app.get("/api/articles/:article_id/comments", getArticleCommentsById);
@@ -35,7 +38,7 @@ app.post("/api/articles/:article_id/comments", postArticleCommentById);
 
 app.patch("/api/articles/:article_id", patchArticleById);
 
-app.delete("/api/comments/:comment_id", deleteCommentById)
+app.delete("/api/comments/:comment_id", deleteCommentById);
 
 app.all("/api/*", inputErrorHandler);
 

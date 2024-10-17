@@ -216,6 +216,35 @@ describe("GET: /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("GET: /api/users", () => {
+  describe("GET: 200", () => {
+    test("Should return an array of users when this endpoint is navigated to", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          const users = body.users;
+          expect(users).toHaveLength(4);
+          users.forEach((user) => {
+            expect(user).toHaveProperty("username", expect.any(String));
+            expect(user).toHaveProperty("name", expect.any(String));
+            expect(user).toHaveProperty("avatar_url", expect.any(String));
+          });
+        });
+    });
+  });
+  describe("GET: 400", () => {
+    test("Should return an error message when the endpoint is invalid", () => {
+      return request(app)
+        .get("/api/userz")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid input");
+        });
+    });
+  });
+});
+
 describe("POST: /api/articles/:article_id/comments", () => {
   describe("POST: 201s", () => {
     test("Should successfully post a new comment to the given article id", () => {

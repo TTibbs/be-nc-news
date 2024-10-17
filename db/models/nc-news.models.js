@@ -94,7 +94,6 @@ exports.selectCommentToDelete = (comment_id) => {
       if (rows.length === 0) {
         return Promise.reject({ status: 404, msg: "Article does not exist" });
       }
-      console.log(rows);
       return rows[0];
     });
 };
@@ -106,6 +105,12 @@ exports.selectCommentById = (comment_id) => {
       if (rows.length === 0) {
         return Promise.reject({ status: 404, msg: "Article does not exist" });
       }
-      console.log(rows);
     });
+};
+
+exports.selectUsers = () => {
+  return db.query(`SELECT * FROM users`).then(({ rows }) => {
+    console.log(rows);
+    return rows;
+  });
 };
