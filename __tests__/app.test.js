@@ -78,6 +78,41 @@ describe("GET: /api/articles/:article_id", () => {
           expect(article).toHaveProperty("article_img_url");
         });
     });
+    test("Should return article 3 with the total comment count on it", () => {
+      test_article_id = 3;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          expect(article.article_id).toBe(3);
+          expect(article).toHaveProperty("comment_count", "2");
+        });
+    });
+    test("Should return article 1 with the total comment count on it", () => {
+      test_article_id = 1;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          console.log(article);
+          expect(article.article_id).toBe(1);
+          expect(article).toHaveProperty("comment_count", "11");
+        });
+    });
+    test("Should return article 2 which has no comments on it", () => {
+      test_article_id = 2;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          console.log(article);
+          expect(article.article_id).toBe(2);
+          expect(article).toHaveProperty("comment_count", "0");
+        });
+    });
   });
   describe("GET 400", () => {
     test("Should return a message saying when the endpoint data type is invalid", () => {
@@ -158,14 +193,15 @@ describe("GET: /api/articles", () => {
           .expect(200)
           .then(({ body }) => {
             const articles = body.articles;
-            console.log(articles);
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSortedBy("topic", { descending: true });
             expect(firstArticle.topic).toBe("mitch");
             expect(firstArticle.title).toBe("Moustache");
             expect(lastArticle.topic).toBe("cats");
-            expect(lastArticle.title).toBe("UNCOVERED: catspiracy to bring down democracy");
+            expect(lastArticle.title).toBe(
+              "UNCOVERED: catspiracy to bring down democracy"
+            );
           });
       });
       test("Should still work if the sort query wasn't given in lowercase", () => {
