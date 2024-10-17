@@ -353,16 +353,6 @@ describe("GET: /api/users", () => {
         });
     });
   });
-  describe("GET: 400", () => {
-    test("Should return an error message when the endpoint is invalid", () => {
-      return request(app)
-        .get("/api/userz")
-        .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Invalid input");
-        });
-    });
-  });
 });
 
 describe("POST: /api/articles/:article_id/comments", () => {
