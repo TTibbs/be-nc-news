@@ -152,6 +152,22 @@ describe("GET: /api/articles", () => {
             expect(lastArticle.article_id).toBe(1);
           });
       });
+      test("Should allow a query to change the sort order", () => {
+        return request(app)
+          .get("/api/articles?sort_by=topic")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            console.log(articles);
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(articles).toBeSortedBy("topic", { descending: true });
+            expect(firstArticle.topic).toBe("mitch");
+            expect(firstArticle.title).toBe("Moustache");
+            expect(lastArticle.topic).toBe("cats");
+            expect(lastArticle.title).toBe("UNCOVERED: catspiracy to bring down democracy");
+          });
+      });
       test("Should still work if the sort query wasn't given in lowercase", () => {
         return request(app)
           .get("/api/articles?sort_by=ARTICLE_ID")
@@ -549,7 +565,7 @@ describe("DELETE: /api/comments/:comment_id", () => {
       test_comment_id = 3;
       return request(app)
         .delete(`/api/comments/${test_comment_id}`)
-        .expect(204)
+        .expect(204);
     });
   });
   describe("DELETE: 404", () => {
