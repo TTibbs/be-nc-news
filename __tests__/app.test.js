@@ -4,7 +4,7 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index.js");
 const endpoints = require("../endpoints.json");
-const { toBeSortedBy } = require("jest-sorted");
+const { toBeSorted } = require("jest-sorted");
 let test_article_id = 1;
 let test_comment_id = 1;
 
@@ -135,6 +135,126 @@ describe("GET: /api/articles", () => {
         .then(({ body }) => {
           expect(body.msg).toBe("Invalid input");
         });
+    });
+  });
+  describe("SORT: /api/articles", () => {
+    describe("SORT: 200", () => {
+      test("Should allow a query to change the sort order", () => {
+        return request(app)
+          .get("/api/articles?sort_by=article_id")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(articles).toBeSortedBy("article_id", { descending: true });
+            expect(firstArticle.article_id).toBe(13);
+            expect(lastArticle.article_id).toBe(1);
+          });
+      });
+      test("Should still work if the sort query wasn't given in lowercase", () => {
+        return request(app)
+          .get("/api/articles?sort_by=ARTICLE_ID")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(articles).toBeSortedBy("article_id", { descending: true });
+            expect(firstArticle.article_id).toBe(13);
+            expect(lastArticle.article_id).toBe(1);
+          });
+      });
+    });
+    describe("SORT: 400", () => {
+      test("Should return an error message when the sort query is invalid", () => {
+        return request(app)
+          .get("/api/articles?sort_by=not_a_sort_query")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Bad request");
+          });
+      });
+    });
+    describe("SORT: 404", () => {
+      test("Should return an error message when the sort query is valid but endpoint isn't", () => {
+        return request(app)
+          .get("/api/articlez?sort_by=author")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Invalid input");
+          });
+      });
+    });
+  });
+  describe("ORDER: /api/articles", () => {
+    describe("ORDER: 200", () => {
+      test("Should allow a query to change the default order", () => {
+        return request(app)
+          .get("/api/articles?order=ASC")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(articles).toBeSorted("created_at", { descending: false });
+            expect(firstArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
+          });
+      });
+      test("Should still work if the order query was given in lowercase", () => {
+        return request(app)
+          .get("/api/articles?order=asc")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(articles).toBeSorted("created_at", { descending: false });
+            expect(firstArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
+          });
+      });
+    });
+  });
+  describe("SORT & ORDER: /api/articles", () => {
+    describe("SORT & ORDER: 200", () => {
+      test("Should return the article array using a sort and order query", () => {
+        return request(app)
+          .get("/api/articles?sort_by=votes&order=ASC")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(firstArticle.votes).toBe(100);
+            expect(lastArticle.votes).toBe(0);
+            expect(articles).toBeSorted("votes", { descending: false });
+          });
+      });
+      test("Should still work if the sort by query is uppercase and order query is lowercase", () => {
+        return request(app)
+          .get("/api/articles?sort_by=VOTES&order=asc")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            const firstArticle = articles[0];
+            const lastArticle = articles[articles.length - 1];
+            expect(firstArticle.votes).toBe(100);
+            expect(lastArticle.votes).toBe(0);
+            expect(articles).toBeSorted("votes", { descending: false });
+          });
+      });
+    });
+    describe("SORT & ORDER: 400", () => {
+      test("Should return an error message if sort query and order query isn't valid", () => {
+        return request(app)
+          .get("/api/articles?sort_by=not_a_query&order=not_a_query")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Bad request");
+          });
+      });
     });
   });
 });

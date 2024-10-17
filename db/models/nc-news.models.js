@@ -1,5 +1,4 @@
 const db = require("../connection");
-const { dataBaseError } = require("../errors");
 
 exports.fetchTopics = () => {
   return db.query(`SELECT * FROM topics;`).then(({ rows }) => {
@@ -22,24 +21,41 @@ exports.fetchArticleById = (article) => {
     });
 };
 
-exports.fetchArticles = () => {
-  return db
-    .query(
-      `
-      SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id)
-      AS comment_count
-      FROM articles
-      LEFT JOIN comments ON articles.article_id = comments.article_id
-      GROUP BY articles.article_id
-      ORDER BY articles.created_at DESC;
-      `
-    )
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "Invalid input" });
-      }
-      return rows;
-    });
+exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
+  sort_by = sort_by.toLowerCase();
+  order = order.toUpperCase();
+  const validSortQueries = [
+    "created_at",
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "body",
+    "votes",
+    "article_img_url",
+  ];
+  const validOrderQueries = ["ASC", "DESC"];
+
+  if (!validSortQueries.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Bad request" });
+  }
+
+  if (!validOrderQueries.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Bad request" });
+  }
+
+  let queryString = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id`;
+  let queryValues = [];
+
+  queryString += ` ORDER BY ${sort_by}`;
+  queryString += ` ${order}`;
+
+  return db.query(queryString, queryValues).then(({ rows }) => {
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Invalid input" });
+    }
+    return rows;
+  });
 };
 
 exports.fetchArticleCommentsById = (article_id) => {
@@ -110,7 +126,6 @@ exports.selectCommentById = (comment_id) => {
 
 exports.selectUsers = () => {
   return db.query(`SELECT * FROM users`).then(({ rows }) => {
-    console.log(rows);
     return rows;
   });
 };
