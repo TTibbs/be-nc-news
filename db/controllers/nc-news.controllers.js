@@ -6,6 +6,8 @@ const {
   writeArticleCommentById,
   fetchUserByUsername,
   selectArticleIdToPatch,
+  selectCommentToDelete,
+  selectCommentById,
 } = require("../models/nc-news.models");
 
 exports.getTopics = (req, res, next) => {
@@ -80,6 +82,23 @@ exports.patchArticleById = (req, res, next) => {
     .then((result) => {
       const updatedArticle = result[1];
       res.status(202).send({ updatedArticle });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.deleteCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  const promises = [
+    selectCommentById(comment_id),
+    selectCommentToDelete(comment_id),
+  ];
+  Promise.all(promises)
+    .then((result) => {
+      console.log(result);
+      const successfulDeleteMsg = "Comment deleted";
+      res.status(202).send({ msg: successfulDeleteMsg });
     })
     .catch((err) => {
       next(err);
