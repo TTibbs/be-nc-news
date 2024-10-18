@@ -11,6 +11,19 @@ let test_comment_id = 1;
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
+describe("GET: /api", () => {
+  test("Should return with endpoints that are valid paths", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then(({ body }) => {
+        const testEndPoints = body.endpoints;
+        expect(testEndPoints).toEqual(endpoints);
+        expect(typeof body.endpoints).toBe("object");
+      });
+  });
+});
+
 describe("GET: /api/topics", () => {
   test("Should return an array of topics", () => {
     return request(app)
@@ -27,87 +40,48 @@ describe("GET: /api/topics", () => {
   });
 });
 
-describe("GET: /api", () => {
-  test("Should return with endpoints that are valid paths", () => {
-    return request(app)
-      .get("/api")
-      .expect(200)
-      .then(({ body }) => {
-        const testEndPoints = body.endpoints;
-        expect(testEndPoints).toEqual(endpoints);
-        expect(typeof body.endpoints).toBe("object");
-      });
+describe("GET: /api/users", () => {
+  describe("GET: 200", () => {
+    test("Should return an array of users when this endpoint is navigated to", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          const users = body.users;
+          expect(users).toHaveLength(4);
+          users.forEach((user) => {
+            expect(user).toHaveProperty("username", expect.any(String));
+            expect(user).toHaveProperty("name", expect.any(String));
+            expect(user).toHaveProperty("avatar_url", expect.any(String));
+          });
+        });
+    });
   });
 });
 
-describe("GET: /api/articles/:article_id", () => {
+describe("GET: /api/users/:username", () => {
   describe("GET: 200", () => {
-    test("Should return the details for article 1 as that is the endpoint being navigated to", () => {
-      test_article_id = 1;
+    test("Should return a username based on parameter used", () => {
       return request(app)
-        .get(`/api/articles/${test_article_id}`)
-        .expect(200)
+        .get("/api/users/icellusedkars")
         .then(({ body }) => {
-          const article = body.article;
-          expect(article.article_id).toBe(1);
-          expect(article).toHaveProperty("article_id");
-          expect(article).toHaveProperty("title");
-          expect(article).toHaveProperty("topic");
-          expect(article).toHaveProperty("author");
-          expect(article).toHaveProperty("body");
-          expect(article).toHaveProperty("created_at");
-          expect(article).toHaveProperty("votes");
-          expect(article).toHaveProperty("article_img_url");
-        });
-    });
-    test("Should return the details for article 2 as that is the endpoint being navigated to", () => {
-      test_article_id = 2;
-      return request(app)
-        .get(`/api/articles/${test_article_id}`)
-        .expect(200)
-        .then(({ body }) => {
-          const article = body.article;
-          expect(article.article_id).toBe(2);
-          expect(article).toHaveProperty("article_id");
-          expect(article).toHaveProperty("title");
-          expect(article).toHaveProperty("topic");
-          expect(article).toHaveProperty("author");
-          expect(article).toHaveProperty("body");
-          expect(article).toHaveProperty("created_at");
-          expect(article).toHaveProperty("votes");
-          expect(article).toHaveProperty("article_img_url");
-        });
-    });
-    test("Should return article 3 with the total comment count on it", () => {
-      test_article_id = 3;
-      return request(app)
-        .get(`/api/articles/${test_article_id}`)
-        .expect(200)
-        .then(({ body }) => {
-          const article = body.article;
-          expect(article.article_id).toBe(3);
-          expect(article).toHaveProperty("comment_count", 2);
-        });
-    });
-  });
-  describe("GET 400", () => {
-    test("Should return a message saying when the endpoint data type is invalid", () => {
-      return request(app)
-        .get("/api/articles/not_an_id")
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
+          const user = body.user;
+          expect(user).toHaveProperty("username", "icellusedkars");
+          expect(user).toHaveProperty("name", "sam");
+          expect(user).toHaveProperty(
+            "avatar_url",
+            "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+          );
         });
     });
   });
   describe("GET: 404", () => {
-    test("Should return an error message if the given article id doesn't exist", () => {
-      const nonExistantId = 1000;
+    test("Should return an error message when username is not found", () => {
       return request(app)
-        .get(`/api/articles/${nonExistantId}`)
+        .get("/api/users/Username_doesnt_exist_yet")
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe("Article does not exist");
+          expect(body.msg).toBe("User does not exist");
         });
     });
   });
@@ -170,18 +144,18 @@ describe("GET: /api/articles", () => {
           .expect(200)
           .then(({ body }) => {
             const articles = body.articles;
-            expect(articles).toBeSorted("created_at", { descending: false })
+            expect(articles).toBeSorted("created_at", { descending: false });
           });
       });
       test("Should work if the topic queried had no relevant articles", () => {
         return request(app)
-        .get("/api/articles?topic=paper")
-        .expect(200)
-        .then(({ body }) => {
-          const articles = body.articles;
-          expect(articles).toEqual([]);
-        })
-      })
+          .get("/api/articles?topic=paper")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            expect(articles).toEqual([]);
+          });
+      });
       test("Should still work if the sort query wasn't given in lowercase", () => {
         return request(app)
           .get("/api/articles?sort_by=ARTICLE_ID")
@@ -201,7 +175,7 @@ describe("GET: /api/articles", () => {
           .expect(200)
           .then(({ body }) => {
             const articles = body.articles;
-            expect(articles).toBeSorted("created_at", { descending: true })
+            expect(articles).toBeSorted("created_at", { descending: true });
           });
       });
     });
@@ -298,6 +272,155 @@ describe("GET: /api/articles", () => {
   });
 });
 
+describe("GET: /api/articles/:article_id", () => {
+  describe("GET: 200", () => {
+    test("Should return the details for article 1 as that is the endpoint being navigated to", () => {
+      test_article_id = 1;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          console.log(article);
+          expect(article.article_id).toBe(1);
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("body");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
+        });
+    });
+    test("Should return the details for article 2 as that is the endpoint being navigated to", () => {
+      test_article_id = 2;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          expect(article.article_id).toBe(2);
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("body");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
+        });
+    });
+    test("Should return article 3 with the total comment count on it", () => {
+      test_article_id = 3;
+      return request(app)
+        .get(`/api/articles/${test_article_id}`)
+        .expect(200)
+        .then(({ body }) => {
+          const article = body.article;
+          expect(article.article_id).toBe(3);
+          expect(article).toHaveProperty("comment_count", 2);
+        });
+    });
+  });
+  describe("GET 400", () => {
+    test("Should return a message saying when the endpoint data type is invalid", () => {
+      return request(app)
+        .get("/api/articles/not_an_id")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("GET: 404", () => {
+    test("Should return an error message if the given article id doesn't exist", () => {
+      const nonExistantId = 1000;
+      return request(app)
+        .get(`/api/articles/${nonExistantId}`)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
+        });
+    });
+  });
+});
+
+describe("PATCH: /api/articles/:article_id", () => {
+  describe("PATCH: 202", () => {
+    test("Should increase the vote property and return the updated article", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(202)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          const updatedArticle = body.updatedArticle;
+          expect(updatedArticle.article_id).toBe(3);
+          expect(updatedArticle.title).toBe(
+            "Eight pug gifs that remind me of mitch"
+          );
+          expect(updatedArticle.topic).toBe("mitch");
+          expect(updatedArticle.author).toBe("icellusedkars");
+          expect(updatedArticle.body).toBe("some gifs");
+          expect(updatedArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+          expect(updatedArticle.votes).toBe(10);
+          expect(updatedArticle.article_img_url).toBe(
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          );
+        });
+    });
+  });
+  describe("PATCH: 400s", () => {
+    test("Should return an error message when the key is invalid", () => {
+      const updatedVotes = { wrong_key: 10 };
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given key/prop is missing", () => {
+      const updatedVotes = "10";
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given article id is invalid", () => {
+      const updatedVotes = { inc_votes: 10 };
+      return request(app)
+        .patch("/api/articles/notAnId")
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("PATCH: 404", () => {
+    test("Should return an error message when the given article id doesn't exist", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_article_id = 1000;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(404)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
+        });
+    });
+  });
+});
+
 describe("GET: /api/articles/:article_id/comments", () => {
   describe("GET: 200s", () => {
     test("Should return an empty array of comments when the given article_id has no comments", () => {
@@ -370,25 +493,6 @@ describe("GET: /api/articles/:article_id/comments", () => {
         .then(({ body }) => {
           const errMsg = body.msg;
           expect(errMsg).toBe("Article does not exist");
-        });
-    });
-  });
-});
-
-describe("GET: /api/users", () => {
-  describe("GET: 200", () => {
-    test("Should return an array of users when this endpoint is navigated to", () => {
-      return request(app)
-        .get("/api/users")
-        .expect(200)
-        .then(({ body }) => {
-          const users = body.users;
-          expect(users).toHaveLength(4);
-          users.forEach((user) => {
-            expect(user).toHaveProperty("username", expect.any(String));
-            expect(user).toHaveProperty("name", expect.any(String));
-            expect(user).toHaveProperty("avatar_url", expect.any(String));
-          });
         });
     });
   });
@@ -497,84 +601,9 @@ describe("POST: /api/articles/:article_id/comments", () => {
       };
       test_article_id = 1000;
       return request(app)
-        .post(`/api/articles/${test_article_id}/comments`)
+        .post("/api/articles/1000/comments")
         .send(addedComment)
         .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Article does not exist");
-        });
-    });
-  });
-});
-
-describe("PATCH: /api/articles/:article_id", () => {
-  describe("PATCH: 202", () => {
-    test("Should increase the vote property and return the updated article", () => {
-      const updatedVotes = { inc_votes: 10 };
-      test_article_id = 3;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(202)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          const updatedArticle = body.updatedArticle;
-          expect(updatedArticle.article_id).toBe(3);
-          expect(updatedArticle.title).toBe(
-            "Eight pug gifs that remind me of mitch"
-          );
-          expect(updatedArticle.topic).toBe("mitch");
-          expect(updatedArticle.author).toBe("icellusedkars");
-          expect(updatedArticle.body).toBe("some gifs");
-          expect(updatedArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
-          expect(updatedArticle.votes).toBe(10);
-          expect(updatedArticle.article_img_url).toBe(
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
-          );
-        });
-    });
-  });
-  describe("PATCH: 400s", () => {
-    test("Should return an error message when the key is invalid", () => {
-      const updatedVotes = { wrong_key: 10 };
-      test_article_id = 3;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(400)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
-        });
-    });
-    test("Should return an error message when the given key/prop is missing", () => {
-      const updatedVotes = "10";
-      test_article_id = 3;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(400)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
-        });
-    });
-    test("Should return an error message when the given article id is invalid", () => {
-      const updatedVotes = { inc_votes: 10 };
-      return request(app)
-        .patch("/api/articles/notAnId")
-        .expect(400)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
-        });
-    });
-  });
-  describe("PATCH: 404", () => {
-    test("Should return an error message when the given article id doesn't exist", () => {
-      const updatedVotes = { inc_votes: 10 };
-      test_article_id = 1000;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(404)
-        .send(updatedVotes)
         .then(({ body }) => {
           expect(body.msg).toBe("Article does not exist");
         });
