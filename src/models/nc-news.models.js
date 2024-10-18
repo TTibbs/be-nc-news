@@ -21,13 +21,10 @@ exports.selectArticleById = (article) => {
 };
 
 exports.selectTopicBySlug = (topic) => {
-  if (!topic) return Promise.resolve();
+  if (!topic) return Promise.resolve({ status: 404, msg: "Topic doesn't exist" });
   return db
     .query(`SELECT * FROM topics WHERE topics.slug = $1`, [topic])
     .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "Topic doesn't exist" });
-      }
       return rows;
     });
 };
