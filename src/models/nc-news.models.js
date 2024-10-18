@@ -1,15 +1,15 @@
-const db = require("../connection");
+const db = require("../../db/connection.js");
 
-exports.fetchTopics = () => {
+exports.selectTopics = () => {
   return db.query(`SELECT * FROM topics;`).then(({ rows }) => {
     return rows;
   });
 };
 
-exports.fetchArticleById = (article) => {
+exports.selectArticleById = (article) => {
   return db
     .query(
-      `SELECT articles.author, articles.body, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id;`,
+      `SELECT articles.author, articles.body, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id;`,
       [article]
     )
     .then(({ rows }) => {
@@ -32,7 +32,7 @@ exports.selectTopicBySlug = (topic) => {
     });
 };
 
-exports.fetchArticles = (
+exports.selectArticles = (
   sort_by = "created_at",
   order = "DESC",
   topic = ""
@@ -75,7 +75,7 @@ exports.fetchArticles = (
   });
 };
 
-exports.fetchArticleCommentsById = (article_id) => {
+exports.selectArticleCommentsById = (article_id) => {
   return db
     .query(
       `SELECT * FROM comments
@@ -99,7 +99,7 @@ exports.writeArticleCommentById = (article_id, username, body) => {
     });
 };
 
-exports.fetchUserByUsername = (username) => {
+exports.selectUserByUsername = (username) => {
   return db
     .query(`SELECT * FROM users WHERE username = $1`, [username])
     .then(({ rows }) => {

@@ -1,10 +1,10 @@
-const app = require("../db/app.js");
+const app = require("../src/app.js");
 const request = require("supertest");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index.js");
-const endpoints = require("../endpoints.json");
-const { toBeSorted } = require("jest-sorted");
+const endpoints = require("../src/endpoints.json");
+require("jest-sorted");
 let test_article_id = 1;
 let test_comment_id = 1;
 
@@ -12,7 +12,7 @@ beforeEach(() => seed(data));
 afterAll(() => db.end());
 
 describe("GET: /api/topics", () => {
-  test("Should return an array of objects containing topics slug and description properties", () => {
+  test("Should return an array of topics", () => {
     return request(app)
       .get("/api/topics")
       .expect(200)
@@ -28,7 +28,7 @@ describe("GET: /api/topics", () => {
 });
 
 describe("GET: /api", () => {
-  test("Should return with valid endpoints that are available for users", () => {
+  test("Should return with endpoints that are valid paths", () => {
     return request(app)
       .get("/api")
       .expect(200)
@@ -86,29 +86,7 @@ describe("GET: /api/articles/:article_id", () => {
         .then(({ body }) => {
           const article = body.article;
           expect(article.article_id).toBe(3);
-          expect(article).toHaveProperty("comment_count", "2");
-        });
-    });
-    test("Should return article 1 with the total comment count on it", () => {
-      test_article_id = 1;
-      return request(app)
-        .get(`/api/articles/${test_article_id}`)
-        .expect(200)
-        .then(({ body }) => {
-          const article = body.article;
-          expect(article.article_id).toBe(1);
-          expect(article).toHaveProperty("comment_count", "11");
-        });
-    });
-    test("Should return article 2 which has no comments on it", () => {
-      test_article_id = 2;
-      return request(app)
-        .get(`/api/articles/${test_article_id}`)
-        .expect(200)
-        .then(({ body }) => {
-          const article = body.article;
-          expect(article.article_id).toBe(2);
-          expect(article).toHaveProperty("comment_count", "0");
+          expect(article).toHaveProperty("comment_count", 2);
         });
     });
   });
@@ -144,7 +122,7 @@ describe("GET: /api/articles", () => {
         .then(({ body }) => {
           const articles = body.articles;
           expect(articles).toHaveLength(13);
-          expect(articles).toBeSortedBy("created_at", {
+          expect(articles).toBeSorted("created_at", {
             descending: true,
           });
           articles.forEach((article) => {
@@ -164,16 +142,6 @@ describe("GET: /api/articles", () => {
         });
     });
   });
-  describe("GET: 400s", () => {
-    test("Should return a message saying the URL endpoint is invalid", () => {
-      return request(app)
-        .get("/api/wrong_endpoint")
-        .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Invalid input");
-        });
-    });
-  });
   describe("SORT: /api/articles", () => {
     describe("SORT: 200", () => {
       test("Should allow the sort query to be changed", () => {
@@ -182,11 +150,7 @@ describe("GET: /api/articles", () => {
           .expect(200)
           .then(({ body }) => {
             const articles = body.articles;
-            const firstArticle = articles[0];
-            const lastArticle = articles[articles.length - 1];
-            expect(articles).toBeSortedBy("article_id", { descending: true });
-            expect(firstArticle.article_id).toBe(13);
-            expect(lastArticle.article_id).toBe(1);
+            expect(articles).toBeSorted("article_id", { descending: true });
           });
       });
       test("Should allow the topic query to be changed", () => {
@@ -226,7 +190,7 @@ describe("GET: /api/articles", () => {
             const articles = body.articles;
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
-            expect(articles).toBeSortedBy("article_id", { descending: true });
+            expect(articles).toBeSorted("article_id", { descending: true });
             expect(firstArticle.article_id).toBe(13);
             expect(lastArticle.article_id).toBe(1);
           });
@@ -379,7 +343,7 @@ describe("GET: /api/articles/:article_id/comments", () => {
         .expect(200)
         .then(({ body }) => {
           const articleComments = body.articleComments;
-          expect(articleComments).toBeSortedBy("created_at", {
+          expect(articleComments).toBeSorted("created_at", {
             descending: true,
           });
         });

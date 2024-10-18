@@ -10,7 +10,7 @@ const {
   deleteCommentById,
 } = require("./controllers/nc-news.controllers.js");
 const app = express();
-const endpoints = require("../endpoints.json");
+const endpoints = require("./endpoints.json");
 const {
   psqlErrorHandler,
   customErrorHandler,
@@ -24,11 +24,11 @@ app.get("/api", (req, res) => {
   res.status(200).send({ endpoints: endpoints });
 });
 
+app.get("/api/users", getUsers);
+
 app.get("/api/topics", getTopics);
 
 app.get("/api/articles", getArticles);
-
-app.get("/api/users", getUsers);
 
 app.get("/api/articles/:article_id", getArticleById);
 

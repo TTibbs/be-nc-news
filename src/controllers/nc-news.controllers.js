@@ -1,26 +1,26 @@
 const {
-  fetchTopics,
-  fetchArticleById,
-  fetchArticles,
-  fetchArticleCommentsById,
+  selectTopics,
+  selectArticleById,
+  selectArticles,
+  selectArticleCommentsById,
   writeArticleCommentById,
-  fetchUserByUsername,
+  selectUserByUsername,
   selectArticleIdToPatch,
   selectCommentToDelete,
   selectCommentById,
   selectUsers,
   selectTopicBySlug,
-} = require("../models/nc-news.models");
+} = require("../models/nc-news.models.js");
 
 exports.getTopics = (req, res, next) => {
-  fetchTopics().then((topics) => {
+  selectTopics().then((topics) => {
     res.status(200).send({ topics });
   });
 };
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
-  fetchArticleById(article_id)
+  selectArticleById(article_id)
     .then((article) => {
       res.status(200).send({ article });
     })
@@ -33,7 +33,7 @@ exports.getArticles = (req, res, next) => {
   const { sort_by, order, topic } = req.query;
   selectTopicBySlug(topic)
     .then(() => {
-      return fetchArticles(sort_by, order, topic);
+      return selectArticles(sort_by, order, topic);
     })
     .then((articles) => {
       res.status(200).send({ articles });
@@ -56,8 +56,8 @@ exports.getUsers = (req, res, next) => {
 exports.getArticleCommentsById = (req, res, next) => {
   const { article_id } = req.params;
   const promises = [
-    fetchArticleCommentsById(article_id),
-    fetchArticleById(article_id),
+    selectArticleCommentsById(article_id),
+    selectArticleById(article_id),
   ];
   Promise.all(promises)
     .then((results) => {
@@ -73,9 +73,9 @@ exports.postArticleCommentById = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
   const promises = [
-    fetchArticleById(article_id),
+    selectArticleById(article_id),
     writeArticleCommentById(article_id, username, body),
-    fetchUserByUsername(username),
+    selectUserByUsername(username),
   ];
   Promise.all(promises)
     .then((result) => {
@@ -91,7 +91,7 @@ exports.patchArticleById = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
   const promises = [
-    fetchArticleById(article_id),
+    selectArticleById(article_id),
     selectArticleIdToPatch(inc_votes, article_id),
   ];
   Promise.all(promises)
