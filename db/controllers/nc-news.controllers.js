@@ -9,6 +9,7 @@ const {
   selectCommentToDelete,
   selectCommentById,
   selectUsers,
+  selectTopicBySlug,
 } = require("../models/nc-news.models");
 
 exports.getTopics = (req, res, next) => {
@@ -29,8 +30,11 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by } = req.query;
-  fetchArticles(sort_by)
+  const { sort_by, order, topic } = req.query;
+  selectTopicBySlug(topic)
+    .then(() => {
+      return fetchArticles(sort_by, order, topic);
+    })
     .then((articles) => {
       res.status(200).send({ articles });
     })

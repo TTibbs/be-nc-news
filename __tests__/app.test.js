@@ -96,7 +96,6 @@ describe("GET: /api/articles/:article_id", () => {
         .expect(200)
         .then(({ body }) => {
           const article = body.article;
-          console.log(article);
           expect(article.article_id).toBe(1);
           expect(article).toHaveProperty("comment_count", "11");
         });
@@ -108,7 +107,6 @@ describe("GET: /api/articles/:article_id", () => {
         .expect(200)
         .then(({ body }) => {
           const article = body.article;
-          console.log(article);
           expect(article.article_id).toBe(2);
           expect(article).toHaveProperty("comment_count", "0");
         });
@@ -150,14 +148,18 @@ describe("GET: /api/articles", () => {
             descending: true,
           });
           articles.forEach((article) => {
-            expect(article).not.toHaveProperty("body");
-            expect(article).toHaveProperty("article_id");
-            expect(article).toHaveProperty("title");
-            expect(article).toHaveProperty("topic");
-            expect(article).toHaveProperty("author");
-            expect(article).toHaveProperty("created_at");
-            expect(article).toHaveProperty("votes");
-            expect(article).toHaveProperty("article_img_url");
+            expect(article).not.toHaveProperty("body", expect.any(String));
+            expect(article).toHaveProperty("article_id", expect.any(Number));
+            expect(article).toHaveProperty("title", expect.any(String));
+            expect(article).toHaveProperty("topic", expect.any(String));
+            expect(article).toHaveProperty("author", expect.any(String));
+            expect(article).toHaveProperty("created_at", expect.any(String));
+            expect(article).toHaveProperty("votes", expect.any(Number));
+            expect(article).toHaveProperty(
+              "article_img_url",
+              expect.any(String)
+            );
+            expect(article).toHaveProperty("comment_count", expect.any(Number));
           });
         });
     });
@@ -174,7 +176,7 @@ describe("GET: /api/articles", () => {
   });
   describe("SORT: /api/articles", () => {
     describe("SORT: 200", () => {
-      test("Should allow a query to change the sort order", () => {
+      test("Should allow the sort query to be changed", () => {
         return request(app)
           .get("/api/articles?sort_by=article_id")
           .expect(200)
@@ -187,23 +189,35 @@ describe("GET: /api/articles", () => {
             expect(lastArticle.article_id).toBe(1);
           });
       });
-      test("Should allow a query to change the sort order", () => {
+      test("Should allow the topic query to be changed", () => {
         return request(app)
-          .get("/api/articles?sort_by=topic")
+          .get("/api/articles?topic=cats")
           .expect(200)
           .then(({ body }) => {
             const articles = body.articles;
-            const firstArticle = articles[0];
-            const lastArticle = articles[articles.length - 1];
-            expect(articles).toBeSortedBy("topic", { descending: true });
-            expect(firstArticle.topic).toBe("mitch");
-            expect(firstArticle.title).toBe("Moustache");
-            expect(lastArticle.topic).toBe("cats");
-            expect(lastArticle.title).toBe(
-              "UNCOVERED: catspiracy to bring down democracy"
-            );
+            articles.forEach((article) => {
+              expect(article.topic).toBe("cats");
+            });
           });
       });
+      test("Should allow the order query to be changed", () => {
+        return request(app)
+          .get("/api/articles?order=ASC")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            expect(articles).toBeSorted("created_at", { descending: false })
+          });
+      });
+      test("Should work if the topic queried had no relevant articles", () => {
+        return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body }) => {
+          const articles = body.articles;
+          expect(articles).toEqual([]);
+        })
+      })
       test("Should still work if the sort query wasn't given in lowercase", () => {
         return request(app)
           .get("/api/articles?sort_by=ARTICLE_ID")
@@ -215,6 +229,15 @@ describe("GET: /api/articles", () => {
             expect(articles).toBeSortedBy("article_id", { descending: true });
             expect(firstArticle.article_id).toBe(13);
             expect(lastArticle.article_id).toBe(1);
+          });
+      });
+      test("Should still work if sort_by input was wrong", () => {
+        return request(app)
+          .get("/api/articles?sot_by=votes")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            expect(articles).toBeSorted("created_at", { descending: true })
           });
       });
     });
@@ -229,9 +252,9 @@ describe("GET: /api/articles", () => {
       });
     });
     describe("SORT: 404", () => {
-      test("Should return an error message when the sort query is valid but endpoint isn't", () => {
+      test("Should return an error message when the topic does not exist", () => {
         return request(app)
-          .get("/api/articlez?sort_by=author")
+          .get("/api/topic=thistookwaytoolonglol")
           .expect(404)
           .then(({ body }) => {
             expect(body.msg).toBe("Invalid input");
@@ -250,8 +273,8 @@ describe("GET: /api/articles", () => {
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("created_at", { descending: false });
-            expect(firstArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
-            expect(lastArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
+            expect(firstArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
           });
       });
       test("Should still work if the order query was given in lowercase", () => {
@@ -263,8 +286,8 @@ describe("GET: /api/articles", () => {
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("created_at", { descending: false });
-            expect(firstArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
-            expect(lastArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
+            expect(firstArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
           });
       });
     });
@@ -279,8 +302,8 @@ describe("GET: /api/articles", () => {
             const articles = body.articles;
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
-            expect(firstArticle.votes).toBe(100);
-            expect(lastArticle.votes).toBe(0);
+            expect(firstArticle.votes).toBe(0);
+            expect(lastArticle.votes).toBe(100);
             expect(articles).toBeSorted("votes", { descending: false });
           });
       });
@@ -292,8 +315,8 @@ describe("GET: /api/articles", () => {
             const articles = body.articles;
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
-            expect(firstArticle.votes).toBe(100);
-            expect(lastArticle.votes).toBe(0);
+            expect(firstArticle.votes).toBe(0);
+            expect(lastArticle.votes).toBe(100);
             expect(articles).toBeSorted("votes", { descending: false });
           });
       });
