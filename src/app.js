@@ -1,16 +1,6 @@
 const express = require("express");
-const {
-  getTopics,
-  getArticles,
-  getUsers,
-  getArticleById,
-  getArticleCommentsById,
-  postArticleCommentById,
-  patchArticleById,
-  deleteCommentById,
-} = require("./controllers/nc-news.controllers.js");
+const apiRouter = require("./routes/api-router.js");
 const app = express();
-const endpoints = require("./endpoints.json");
 const {
   psqlErrorHandler,
   customErrorHandler,
@@ -20,32 +10,10 @@ const {
 
 app.use(express.json());
 
-app.get("/api", (req, res) => {
-  res.status(200).send({ endpoints: endpoints });
-});
-
-app.get("/api/users", getUsers);
-
-app.get("/api/topics", getTopics);
-
-app.get("/api/articles", getArticles);
-
-app.get("/api/articles/:article_id", getArticleById);
-
-app.get("/api/articles/:article_id/comments", getArticleCommentsById);
-
-app.post("/api/articles/:article_id/comments", postArticleCommentById);
-
-app.patch("/api/articles/:article_id", patchArticleById);
-
-app.delete("/api/comments/:comment_id", deleteCommentById);
-
-app.all("/api/*", inputErrorHandler);
-
+app.use("/api", apiRouter);
+app.use("/api/*", inputErrorHandler);
 app.use(psqlErrorHandler);
-
 app.use(customErrorHandler);
-
 app.use(serverErrorHandler);
 
 module.exports = app;
