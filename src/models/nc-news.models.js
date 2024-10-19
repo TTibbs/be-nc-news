@@ -35,7 +35,9 @@ exports.selectTopicBySlug = (topic) => {
 exports.selectArticles = (
   sort_by = "created_at",
   order = "DESC",
-  topic = ""
+  topic = "",
+  limit = 10,
+  page = 1
 ) => {
   sort_by = sort_by.toLowerCase();
   order = order.toUpperCase();
@@ -64,12 +66,18 @@ exports.selectArticles = (
   const queryValues = [];
 
   if (topic) {
-    topic.toLowerCase();
-    (queryString += ` WHERE articles.topic = $1`), queryValues.push(topic);
+    topic = topic.toLowerCase();
+    queryString += ` WHERE articles.topic = $1`;
+    queryValues.push(topic);
   }
 
-  queryString += ` GROUP BY articles.article_id ORDER BY ${sort_by}`;
-  queryString += ` ${order}`;
+  queryString += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order}`;
+
+  const offset = (page - 1) * limit;
+  queryString += ` LIMIT $${queryValues.length + 1} OFFSET $${
+    queryValues.length + 2
+  }`;
+  queryValues.push(limit, offset);
 
   return db.query(queryString, queryValues).then(({ rows }) => {
     return rows;

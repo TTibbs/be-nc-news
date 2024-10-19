@@ -44,7 +44,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles minus the body property in descending order",
+    "description": "serves an array of all articles, limited to a number given, in descending order by default",
     "sort_queries": [
       "created_at",
       "article_id",
