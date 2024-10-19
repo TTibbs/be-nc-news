@@ -107,6 +107,16 @@
       ]
     }
   },
+  "POST /api/articles": {
+    "description": "Posts an article",
+    "example_input": {
+      "title": "How I became a full stack developer",
+      "topic": "mitch",
+      "author": "lurker",
+      "body": "I found these great people called Northcoders",
+      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+    }
+  },
   "POST /api/articles/:article_id/comments": {
     "description": "posts a new comment to the given article_id",
     "example_input": {
