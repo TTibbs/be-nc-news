@@ -497,6 +497,63 @@ describe("GET: /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("POST: /api/articles", () => {
+  describe("POST: 201", () => {
+    test("Should create a new article", () => {
+      const addedArticle = {
+        title: "How I became a full stack developer",
+        topic: "mitch",
+        author: "lurker",
+        body: "I found these great people called Northcoders",
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(addedArticle)
+        .expect(201)
+        .then(({ body }) => {
+          const newArticle = body.newArticle;
+          expect(newArticle).toHaveProperty(
+            "body",
+            "I found these great people called Northcoders"
+          );
+        });
+    });
+  });
+  describe("POST: 400", () => {
+    test("Should return an error message when there is no given properties", () => {
+      const addedArticle = {};
+      return request(app)
+        .post("/api/articles")
+        .send(addedArticle)
+        .expect(400)
+        .then(({ body }) => {
+          const errMsg = body.msg;
+          expect(errMsg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message if the properties aren't correct", () => {
+      const addedArticle = {
+        title: "Invalid topic test",
+        topic: 1,
+        author: "lurker",
+        body: "Is this overkill?",
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(addedArticle)
+        .expect(400)
+        .then(({ body }) => {
+          const errMsg = body.msg;
+          expect(errMsg).toBe("Bad request");
+        });
+    });
+  });
+});
+
 describe("POST: /api/articles/:article_id/comments", () => {
   describe("POST: 201s", () => {
     test("Should successfully post a new comment to the given article id", () => {

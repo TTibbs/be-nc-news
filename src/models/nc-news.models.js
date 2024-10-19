@@ -89,6 +89,18 @@ exports.selectArticleCommentsById = (article_id) => {
     });
 };
 
+exports.writeArticle = (articleBody) => {
+  const { title, topic, author, body, article_img_url } = articleBody;
+  return db
+    .query(
+      `INSERT INTO articles (title, topic, author, body, article_img_url) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
+      [title, topic, author, body, article_img_url]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
 exports.writeArticleCommentById = (article_id, username, body) => {
   return db
     .query(
