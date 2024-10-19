@@ -95,7 +95,7 @@ describe("GET: /api/articles", () => {
         .expect(200)
         .then(({ body }) => {
           const articles = body.articles;
-          expect(articles).toHaveLength(13);
+          expect(articles).toHaveLength(10);
           expect(articles).toBeSorted("created_at", {
             descending: true,
           });
@@ -166,7 +166,7 @@ describe("GET: /api/articles", () => {
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("article_id", { descending: true });
             expect(firstArticle.article_id).toBe(13);
-            expect(lastArticle.article_id).toBe(1);
+            expect(lastArticle.article_id).toBe(4);
           });
       });
       test("Should still work if sort_by input was wrong", () => {
@@ -212,7 +212,7 @@ describe("GET: /api/articles", () => {
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("created_at", { descending: false });
             expect(firstArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
-            expect(lastArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-10-11T11:24:00.000Z");
           });
       });
       test("Should still work if the order query was given in lowercase", () => {
@@ -225,7 +225,7 @@ describe("GET: /api/articles", () => {
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("created_at", { descending: false });
             expect(firstArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
-            expect(lastArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-10-11T11:24:00.000Z");
           });
       });
     });
@@ -241,7 +241,7 @@ describe("GET: /api/articles", () => {
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
             expect(firstArticle.votes).toBe(0);
-            expect(lastArticle.votes).toBe(100);
+            expect(lastArticle.votes).toBe(0);
             expect(articles).toBeSorted("votes", { descending: false });
           });
       });
@@ -254,7 +254,7 @@ describe("GET: /api/articles", () => {
             const firstArticle = articles[0];
             const lastArticle = articles[articles.length - 1];
             expect(firstArticle.votes).toBe(0);
-            expect(lastArticle.votes).toBe(100);
+            expect(lastArticle.votes).toBe(0);
             expect(articles).toBeSorted("votes", { descending: false });
           });
       });
@@ -266,6 +266,52 @@ describe("GET: /api/articles", () => {
           .expect(400)
           .then(({ body }) => {
             expect(body.msg).toBe("Bad request");
+          });
+      });
+    });
+  });
+  describe("PAGINATION: /api/articles", () => {
+    describe("PAGINATION: 200", () => {
+      test("Should return the articles using all the queries including pagination", () => {
+        return request(app)
+          .get("/api/articles?sort_by=article_id&order=asc&limit=5&p=1")
+          .expect(200)
+          .then(({ body }) => {
+            const articles = body.articles;
+            expect(articles[0]).toHaveProperty("article_id", 1);
+            expect(articles[articles.length - 1]).toHaveProperty(
+              "article_id",
+              5
+            );
+          });
+      });
+    });
+    describe("PAGINATION: 400", () => {
+      test("Should return an error message when the limit query isn't valid", () => {
+        return request(app)
+          .get("/api/articles?limit=drycode")
+          .expect(400)
+          .then(({ body }) => {
+            const errMsg = body.msg;
+            expect(errMsg).toBe("Bad request");
+          });
+      });
+      test("Should return an error message when the p query isn't valid", () => {
+        return request(app)
+          .get("/api/articles?p=thinkoutsidethebox")
+          .expect(400)
+          .then(({ body }) => {
+            const errMsg = body.msg;
+            expect(errMsg).toBe("Bad request");
+          });
+      });
+      test("Should return an error message when both pagination queries aren't valid", () => {
+        return request(app)
+          .get("/api/articles?limit=drycode&p=thinkoutsidethebox")
+          .expect(400)
+          .then(({ body }) => {
+            const errMsg = body.msg;
+            expect(errMsg).toBe("Bad request");
           });
       });
     });
@@ -677,7 +723,6 @@ describe("PATCH: /api/comments/:comment_id", () => {
         .send(updatedVotes)
         .then(({ body }) => {
           const updatedComment = body.updatedComment;
-          console.log(updatedComment);
           expect(updatedComment).toHaveProperty("comment_id", 1);
           expect(updatedComment).toHaveProperty(
             "body",
@@ -694,7 +739,6 @@ describe("PATCH: /api/comments/:comment_id", () => {
         .send(updatedVotes)
         .then(({ body }) => {
           const updatedComment = body.updatedComment;
-          console.log(updatedComment);
           expect(updatedComment).toHaveProperty("comment_id", 1);
           expect(updatedComment).toHaveProperty(
             "body",
