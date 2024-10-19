@@ -11,6 +11,7 @@ const {
   selectUsers,
   selectUserById,
   selectTopicBySlug,
+  writeArticle,
 } = require("../models/nc-news.models.js");
 
 exports.getTopics = (req, res, next) => {
@@ -75,6 +76,20 @@ exports.getArticleCommentsById = (req, res, next) => {
     .then((results) => {
       const articleComments = results[0];
       res.status(200).send({ articleComments });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postArticle = (req, res, next) => {
+  const articleBody = req.body;
+  articleBody.created_now = new Date().toISOString();
+  articleBody.votes = 0;
+  writeArticle(articleBody)
+    .then((results) => {
+      const newArticle = results;
+      res.status(201).send({ newArticle });
     })
     .catch((err) => {
       next(err);
