@@ -8,6 +8,7 @@ const {
   selectArticleIdToPatch,
   selectCommentToDelete,
   selectCommentById,
+  selectCommentToPatchById,
   selectUsers,
   selectUserById,
   selectTopicBySlug,
@@ -125,6 +126,23 @@ exports.patchArticleById = (req, res, next) => {
     .then((result) => {
       const updatedArticle = result[1];
       res.status(202).send({ updatedArticle });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.patchCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+  const promises = [
+    selectCommentById(comment_id),
+    selectCommentToPatchById(inc_votes, comment_id),
+  ];
+  Promise.all(promises)
+    .then((result) => {
+      const updatedComment = result[1];
+      res.status(202).send({ updatedComment });
     })
     .catch((err) => {
       next(err);
