@@ -345,81 +345,6 @@ describe("GET: /api/articles/:article_id", () => {
   });
 });
 
-describe("PATCH: /api/articles/:article_id", () => {
-  describe("PATCH: 202", () => {
-    test("Should increase the vote property and return the updated article", () => {
-      const updatedVotes = { inc_votes: 10 };
-      test_article_id = 3;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(202)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          const updatedArticle = body.updatedArticle;
-          expect(updatedArticle.article_id).toBe(3);
-          expect(updatedArticle.title).toBe(
-            "Eight pug gifs that remind me of mitch"
-          );
-          expect(updatedArticle.topic).toBe("mitch");
-          expect(updatedArticle.author).toBe("icellusedkars");
-          expect(updatedArticle.body).toBe("some gifs");
-          expect(updatedArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
-          expect(updatedArticle.votes).toBe(10);
-          expect(updatedArticle.article_img_url).toBe(
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
-          );
-        });
-    });
-  });
-  describe("PATCH: 400s", () => {
-    test("Should return an error message when the key is invalid", () => {
-      const updatedVotes = { wrong_key: 10 };
-      test_article_id = 3;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(400)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
-        });
-    });
-    test("Should return an error message when the given key/prop is missing", () => {
-      const updatedVotes = "10";
-      test_article_id = 3;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(400)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
-        });
-    });
-    test("Should return an error message when the given article id is invalid", () => {
-      const updatedVotes = { inc_votes: 10 };
-      return request(app)
-        .patch("/api/articles/notAnId")
-        .expect(400)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad request");
-        });
-    });
-  });
-  describe("PATCH: 404", () => {
-    test("Should return an error message when the given article id doesn't exist", () => {
-      const updatedVotes = { inc_votes: 10 };
-      test_article_id = 1000;
-      return request(app)
-        .patch(`/api/articles/${test_article_id}`)
-        .expect(404)
-        .send(updatedVotes)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Article does not exist");
-        });
-    });
-  });
-});
-
 describe("GET: /api/articles/:article_id/comments", () => {
   describe("GET: 200s", () => {
     test("Should return an empty array of comments when the given article_id has no comments", () => {
@@ -660,6 +585,167 @@ describe("POST: /api/articles/:article_id/comments", () => {
         .post("/api/articles/1000/comments")
         .send(addedComment)
         .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
+        });
+    });
+  });
+});
+
+describe("PATCH: /api/articles/:article_id", () => {
+  describe("PATCH: 202", () => {
+    test("Should increase the vote property and return the updated article", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(202)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          const updatedArticle = body.updatedArticle;
+          expect(updatedArticle.article_id).toBe(3);
+          expect(updatedArticle.title).toBe(
+            "Eight pug gifs that remind me of mitch"
+          );
+          expect(updatedArticle.topic).toBe("mitch");
+          expect(updatedArticle.author).toBe("icellusedkars");
+          expect(updatedArticle.body).toBe("some gifs");
+          expect(updatedArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
+          expect(updatedArticle.votes).toBe(10);
+          expect(updatedArticle.article_img_url).toBe(
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          );
+        });
+    });
+  });
+  describe("PATCH: 400s", () => {
+    test("Should return an error message when the key is invalid", () => {
+      const updatedVotes = { wrong_key: 10 };
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given key/prop is missing", () => {
+      const updatedVotes = "10";
+      test_article_id = 3;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given article id is invalid", () => {
+      const updatedVotes = { inc_votes: 10 };
+      return request(app)
+        .patch("/api/articles/notAnId")
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("PATCH: 404", () => {
+    test("Should return an error message when the given article id doesn't exist", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_article_id = 1000;
+      return request(app)
+        .patch(`/api/articles/${test_article_id}`)
+        .expect(404)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article does not exist");
+        });
+    });
+  });
+});
+
+describe("PATCH: /api/comments/:comment_id", () => {
+  describe("PATCH: 202", () => {
+    test("Should increase the votes on a comment", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_comment_id = 1;
+      return request(app)
+        .patch(`/api/comments/${test_comment_id}`)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          const updatedComment = body.updatedComment;
+          console.log(updatedComment);
+          expect(updatedComment).toHaveProperty("comment_id", 1);
+          expect(updatedComment).toHaveProperty(
+            "body",
+            "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+          );
+          expect(updatedComment).toHaveProperty("votes", 26);
+        });
+    });
+    test("Should decrease the votes on a comment", () => {
+      const updatedVotes = { inc_votes: -10 };
+      test_comment_id = 1;
+      return request(app)
+        .patch(`/api/comments/${test_comment_id}`)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          const updatedComment = body.updatedComment;
+          console.log(updatedComment);
+          expect(updatedComment).toHaveProperty("comment_id", 1);
+          expect(updatedComment).toHaveProperty(
+            "body",
+            "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+          );
+          expect(updatedComment).toHaveProperty("votes", 6);
+        });
+    });
+  });
+  describe("PATCH: 400s", () => {
+    test("Should return an error message when the key is invalid", () => {
+      const updatedVotes = { wrong_key: 10 };
+      test_comment_id = 3;
+      return request(app)
+        .patch(`/api/comments/${test_comment_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given key/prop is missing", () => {
+      const updatedVotes = "10";
+      test_comment_id = 3;
+      return request(app)
+        .patch(`/api/comments/${test_comment_id}`)
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("Should return an error message when the given comment id is invalid", () => {
+      const updatedVotes = { inc_votes: 10 };
+      return request(app)
+        .patch("/api/comments/notAnId")
+        .expect(400)
+        .send(updatedVotes)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("PATCH: 404", () => {
+    test("Should return an error message when the given comment id doesn't exist", () => {
+      const updatedVotes = { inc_votes: 10 };
+      test_comment_id = 1000;
+      return request(app)
+        .patch(`/api/comments/${test_comment_id}`)
+        .expect(404)
+        .send(updatedVotes)
         .then(({ body }) => {
           expect(body.msg).toBe("Article does not exist");
         });
