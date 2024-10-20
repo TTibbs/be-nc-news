@@ -1,49 +1,14 @@
 const {
-  selectTopics,
-  selectArticleById,
   selectArticles,
+  selectArticleById,
   selectArticleCommentsById,
-  writeArticleCommentById,
-  selectUserByUsername,
-  selectArticleIdToPatch,
-  selectCommentToDelete,
-  selectCommentById,
-  selectCommentToPatchById,
-  selectUsers,
-  selectUserById,
-  selectTopicBySlug,
   writeArticle,
-  writeTopic,
-} = require("../models/nc-news.models.js");
-
-exports.getTopics = (req, res, next) => {
-  selectTopics().then((topics) => {
-    res.status(200).send({ topics });
-  });
-};
-
-exports.postTopic = (req, res, next) => {
-  const topicBody = req.body;
-  writeTopic(topicBody)
-    .then((result) => {
-      const newTopic = result;
-      res.status(201).send({ newTopic });
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
-
-exports.getArticleById = (req, res, next) => {
-  const { article_id } = req.params;
-  selectArticleById(article_id)
-    .then((article) => {
-      res.status(200).send({ article });
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
+  writeArticleCommentById,
+  selectArticleIdToPatch,
+  selectArticleToDelete,
+} = require("../models/articles-models.js");
+const { selectUserByUsername } = require("../models/users-models.js");
+const { selectTopicBySlug } = require("../models/topics-models.js");
 
 exports.getArticles = (req, res, next) => {
   const { sort_by, order, topic, limit = 10, p = 1 } = req.query;
@@ -59,21 +24,11 @@ exports.getArticles = (req, res, next) => {
     });
 };
 
-exports.getUsers = (req, res, next) => {
-  selectUsers()
-    .then((users) => {
-      res.status(200).send({ users });
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
-
-exports.getUserById = (req, res, next) => {
-  const { username } = req.params;
-  selectUserById(username)
-    .then((user) => {
-      res.status(200).send({ user });
+exports.getArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  selectArticleById(article_id)
+    .then((article) => {
+      res.status(200).send({ article });
     })
     .catch((err) => {
       next(err);
@@ -145,31 +100,10 @@ exports.patchArticleById = (req, res, next) => {
     });
 };
 
-exports.patchCommentById = (req, res, next) => {
-  const { comment_id } = req.params;
-  const { inc_votes } = req.body;
-  const promises = [
-    selectCommentById(comment_id),
-    selectCommentToPatchById(inc_votes, comment_id),
-  ];
-  Promise.all(promises)
-    .then((result) => {
-      const updatedComment = result[1];
-      res.status(202).send({ updatedComment });
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
-
-exports.deleteCommentById = (req, res, next) => {
-  const { comment_id } = req.params;
-  const promises = [
-    selectCommentById(comment_id),
-    selectCommentToDelete(comment_id),
-  ];
-  Promise.all(promises)
-    .then((result) => {
+exports.deleteArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  selectArticleToDelete(article_id)
+    .then(() => {
       res.status(204).send();
     })
     .catch((err) => {
