@@ -89,7 +89,7 @@ describe("GET: /api/users/:username", () => {
 
 describe("GET: /api/articles", () => {
   describe("GET: 200s", () => {
-    test.only("Should return the articles array sorted in descending order and without a body property", () => {
+    test("Should return the articles array sorted in descending order and without a body property", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
