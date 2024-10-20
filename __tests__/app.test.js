@@ -468,6 +468,42 @@ describe("GET: /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("POST: /api/topics", () => {
+  describe("POST: 201", () => {
+    test("Should post a new topic to the topics", () => {
+      const addedTopic = {
+        slug: "Web Development",
+        description: "How do I center this div?",
+      };
+      return request(app)
+        .post("/api/topics")
+        .send(addedTopic)
+        .expect(201)
+        .then(({ body }) => {
+          const newTopic = body.newTopic;
+          expect(newTopic).toHaveProperty("slug", "Web Development");
+          expect(newTopic).toHaveProperty(
+            "description",
+            "How do I center this div?"
+          );
+        });
+    });
+  });
+  describe("POST: 400", () => {
+    test("Should return an error message when there are no topic properties given", () => {
+      const addedTopic = {};
+      return request(app)
+        .post("/api/topics")
+        .send(addedTopic)
+        .expect(400)
+        .then(({ body }) => {
+          const errMsg = body.msg;
+          expect(errMsg).toBe("Bad request");
+        });
+    });
+  });
+});
+
 describe("POST: /api/articles", () => {
   describe("POST: 201", () => {
     test("Should create a new article", () => {

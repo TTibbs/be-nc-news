@@ -132,6 +132,17 @@
       "created_at": "2024-10-16T12:26:31.406Z"
     }
   },
+  "POST /api/topics": {
+    "description": "Creates a new topic and posts it to /api/topics",
+    "example_input": {
+      "slug": "topic name here",
+      "description": "description here"
+    },
+    "exampleResponse": {
+      "slug": "Web Development",
+      "description": "How do I center this div?"
+    }
+  },
   "PATCH /api/articles/:article_id": {
     "description": "patches the given article id by increasing it's votes by the given key property",
     "example_input": { "inc_votes": 10 },
