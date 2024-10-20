@@ -31,11 +31,14 @@ exports.selectArticles = (
   }
 
   let queryString = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id`;
+  let countQueryString = `SELECT COUNT(DISTINCT articles.article_id) AS total_count FROM articles`;
   const queryValues = [];
 
   if (topic) {
     topic = topic.toLowerCase();
-    queryString += ` WHERE articles.topic = $1`;
+    const whereClause = ` WHERE articles.topic = $1`;
+    queryString += whereClause;
+    countQueryString += whereClause;
     queryValues.push(topic);
   }
 
@@ -45,10 +48,16 @@ exports.selectArticles = (
   queryString += ` LIMIT $${queryValues.length + 1} OFFSET $${
     queryValues.length + 2
   }`;
-  queryValues.push(limit, offset);
+  const paginationValues = [...queryValues, limit, offset];
 
-  return db.query(queryString, queryValues).then(({ rows }) => {
-    return rows;
+  return Promise.all([
+    db.query(queryString, paginationValues),
+    db.query(countQueryString, queryValues),
+  ]).then(([articlesResult, countResult]) => {
+    return {
+      articles: articlesResult.rows,
+      total_count: parseInt(countResult.rows[0].total_count),
+    };
   });
 };
 

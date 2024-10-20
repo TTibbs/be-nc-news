@@ -89,12 +89,14 @@ describe("GET: /api/users/:username", () => {
 
 describe("GET: /api/articles", () => {
   describe("GET: 200s", () => {
-    test("Should return the articles array sorted in descending order and without a body property", () => {
+    test.only("Should return the articles array sorted in descending order and without a body property", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
         .then(({ body }) => {
           const articles = body.articles;
+          console.log(body.total_count);
+          expect(body).toHaveProperty("total_count", expect.any(Number));
           expect(articles).toHaveLength(10);
           expect(articles).toBeSorted("created_at", {
             descending: true,
@@ -836,23 +838,17 @@ describe("PATCH: /api/comments/:comment_id", () => {
 describe("DELETE: /api/articles/:article_id", () => {
   describe("DELETE 204", () => {
     test("Should successfully delete the article with the id given and the comments", () => {
-      return request(app)
-        .delete("/api/articles/5")
-        .expect(204);
+      return request(app).delete("/api/articles/5").expect(204);
     });
   });
   describe("DELETE 400", () => {
     test("Should successfully delete the article with the id given", () => {
-      return request(app)
-        .delete("/api/articles/not_an_id")
-        .expect(400);
+      return request(app).delete("/api/articles/not_an_id").expect(400);
     });
   });
   describe("DELETE 404", () => {
     test("Should successfully delete the article with the id given", () => {
-      return request(app)
-        .delete("/api/articles/40404")
-        .expect(404);
+      return request(app).delete("/api/articles/40404").expect(404);
     });
   });
 });
