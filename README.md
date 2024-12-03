@@ -9,7 +9,11 @@ This is a backend server for a news application built with **Express.js** and **
 
 You can view the API live and view the endpoints that are available [here](https://be-nc-news-92aj.onrender.com/api)
 
-Note: If the data appears on one line, it can be hard to read. Installing a JSON formatter extension to your browser can make data like this easier to view. [This JSON Formatter](https://chromewebstore.google.com/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=en) on the Chrome store is a good one.
+The frontend [repository](https://github.com/TTibbs/nc-news) - the live demo can be seen [here](https://nc-news-ten.vercel.app/articles?p=1)
+
+## Quick Tip:
+
+For a better experience viewing JSON responses, install a browser extension like [JSON Formatter](https://chromewebstore.google.com/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=en)
 
 ## Table of Contents
 - [Technologies](#technologies)
@@ -40,32 +44,65 @@ cd be-nc-news
 npm install
 ```
 
-## Environment Variables
+## Set up the database:
+Ensure you have PostgreSQL installed locally or use a hosted database such as **Supabase**.
 
-The server requires environment variables to be set up in order to seed your databases and run the server correctly. Create 3 .env files, one called .env.development, another called .env.test and one more called .env.production.
+If using Supabase:
 
-You will need 2 variable names:
+- Sign up at [Supabase](https://supabase.com/)
+- Create a new project and retrieve your database URL.
 
-```JavaScript
-PGDATABASE=your_sql_database_name
-DATABASE_URL=your_supabase_link
+## Seed the database:
+
+- For development:
+```bash
+Copy code
+npm run seed
 ```
 
-PGDATABASE is used for both test and development env files, for test data and development data separately.
+- For production:
+```bash
+Copy code
+npm run seed-prod
+```
 
-Make sure that you add a .gitignore file and add .env.* so that they are not pushed up to GitHub.
+## Environment Variables
+
+Set up the following .env files for different environments:
+
+.env.development
+```makefile
+PGDATABASE=your_development_database_name
+```
+
+.env.test
+```makefile
+PGDATABASE=your_test_database_name
+```
+
+.env.production
+```makefile
+DATABASE_URL=your_supabase_database_url
+```
+
+Notes:
+- PGDATABASE is for local development and testing.
+- DATABASE_URL is used in production (e.g., when deploying to Render).
+- Ensure .env.* is added to .gitignore to avoid exposing credentials.
 
 ## Endpoints
 
-1. GET /api - lists all available endpoints
-2. GET /api/users - lists all users
-3. GET /api/topics - lists all topics
-4. GET /api/articles - lists all articles
-5. GET /api/articles/:article_id - view an article by its id
-6. GET /api/articles/:article_id/comments - view comments from an article by its id
-7. POST /api/articles/:article_id/comments - Creates a new comment on the article by id
-8. PATCH /api/articles/:article_id - Updates the votes on an article
-9. DELETE /api/comments/:comment_id - Delete a comment by its id
+| Method  | Endpoint | Description |
+| ------------- | ------------- | ------------- |
+| GET  | /api | Lists all available endpoints |
+| GET  | /api/users  | Lists all users  |
+| GET  | /api/topics  | Lists all topics  |
+| GET  | /api/articles  | Lists all articles  |
+| GET  | /api/articles/:article_id  | View an article by its ID  |
+| GET  | /api/articles/:article_id/comments  | View comments on an article by its ID  |
+| POST  | /api/articles/:article_id/comments  | Creates a new comment on the article  |
+| PATCH  | /api/articles/:article_id  | Updates the votes on an article  |
+| DELETE  | /api/comments/:comment_id  | Deletes a comment by its ID  |
 
 ## Running the Server and Seeding
 
@@ -73,18 +110,6 @@ You need to make sure you have these minimum versions of node.js and postgres in
 
 - Node.js ^22.5.1
 - Postgres ^14.13
-
-Seeding the dev database:
-
-```bash
-npm run seed
-```
-
-Seeding the production database:
-
-```bash
-npm run seed-prod
-```
 
 To start the server:
 
