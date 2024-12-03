@@ -32,6 +32,10 @@ exports.postUser = (req, res, next) => {
       res.status(201).send({ newUser });
     })
     .catch((err) => {
-      next(err);
+      if (err.code === "23505") {
+        res.status(409).send({ msg: "Username already exists" });
+      } else {
+        next(err);
+      }
     });
 };

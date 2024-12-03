@@ -541,6 +541,20 @@ describe("POST: /api/users", () => {
     const { msg } = response.body;
     expect(msg).toBe("Bad request");
   });
+  test("Should not allow multiple usernames to exist", async () => {
+    const user = {
+      username: "TTibbs",
+      name: "Terry Tibbs",
+      avatar_url: "https://example.com/avatar.jpg",
+    };
+    await request(app).post("/api/users").send(user).expect(201);
+    const response = await request(app)
+      .post("/api/users")
+      .send(user)
+      .expect(409);
+    const { msg } = response.body;
+    expect(msg).toBe("Username already exists");
+  });
 });
 
 describe("POST: /api/articles", () => {

@@ -29,10 +29,18 @@ exports.createNewUser = (addedUser) => {
   const { username, name, avatar_url } = addedUser;
   return db
     .query(
-      `INSERT INTO users (username, name, avatar_url) VALUES ($1, $2, $3) RETURNING *;`,
+      `INSERT INTO users (username, name, avatar_url)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (username) DO NOTHING
+       RETURNING *;`,
       [username, name, avatar_url]
     )
     .then(({ rows }) => {
+      if (rows.length === 0) {
+        const error = new Error("Username already exists");
+        error.code = "23505";
+        throw error;
+      }
       return rows[0];
     });
 };
