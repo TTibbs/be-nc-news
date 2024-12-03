@@ -1,6 +1,7 @@
 const {
   selectUsers,
   selectUserById,
+  createNewUser,
 } = require("../models/users-models.js");
 
 exports.getUsers = (req, res, next) => {
@@ -18,6 +19,17 @@ exports.getUserById = (req, res, next) => {
   selectUserById(username)
     .then((user) => {
       res.status(200).send({ user });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postUser = (req, res, next) => {
+  const addedUser = req.body;
+  createNewUser(addedUser)
+    .then((newUser) => {
+      res.status(201).send({ newUser });
     })
     .catch((err) => {
       next(err);

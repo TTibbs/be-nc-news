@@ -24,3 +24,15 @@ exports.selectUserByUsername = (username) => {
       return rows[0];
     });
 };
+
+exports.createNewUser = (addedUser) => {
+  const { username, name, avatar_url } = addedUser;
+  return db
+    .query(
+      `INSERT INTO users (username, name, avatar_url) VALUES ($1, $2, $3) RETURNING *;`,
+      [username, name, avatar_url]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};

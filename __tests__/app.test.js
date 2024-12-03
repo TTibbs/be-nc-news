@@ -95,7 +95,6 @@ describe("GET: /api/articles", () => {
         .expect(200)
         .then(({ body }) => {
           const articles = body.articles;
-          console.log(body.total_count);
           expect(body).toHaveProperty("total_count", expect.any(Number));
           expect(articles).toHaveLength(10);
           expect(articles).toBeSorted("created_at", {
@@ -503,6 +502,44 @@ describe("POST: /api/topics", () => {
           expect(errMsg).toBe("Bad request");
         });
     });
+  });
+});
+
+describe("POST: /api/users", () => {
+  test("Should successfully create a new user", async () => {
+    const addedUser = {
+      username: "TTibbs",
+      name: "Terry Tibbs",
+      avatar_url:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShodwK4XXhzGwuXsOxi1eQ6ZRefzQNdPnbLTWR0LspxCuHmfDAIcIyvAcySwlwQRhLfFE&usqp=CAU",
+    };
+    const response = await request(app)
+      .post("/api/users")
+      .send(addedUser)
+      .expect(201);
+    const { newUser } = response.body;
+    console.log(newUser);
+    expect(newUser).toHaveProperty("username", "TTibbs");
+    expect(newUser).toHaveProperty("name", "Terry Tibbs");
+    expect(newUser).toHaveProperty("avatar_url", expect.any(String));
+  });
+  test("Should return a 400 status code and error message if the sent user has missing fields", async () => {
+    const addedUser = {
+      username: "TTibbs",
+      avatar_url:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShodwK4XXhzGwuXsOxi1eQ6ZRefzQNdPnbLTWR0LspxCuHmfDAIcIyvAcySwlwQRhLfFE&usqp=CAU",
+    };
+    const response = await request(app)
+      .post("/api/users")
+      .send(addedUser)
+      .expect(400);
+    const { msg } = response.body;
+    expect(msg).toBe("Bad request");
+  });
+  test("Should return a 400 status code and error message if the sent user has no fields", async () => {
+    const response = await request(app).post("/api/users").send().expect(400);
+    const { msg } = response.body;
+    expect(msg).toBe("Bad request");
   });
 });
 
