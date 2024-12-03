@@ -56,13 +56,11 @@ If using Supabase:
 
 - For development:
 ```bash
-Copy code
 npm run seed
 ```
 
 - For production:
 ```bash
-Copy code
 npm run seed-prod
 ```
 
