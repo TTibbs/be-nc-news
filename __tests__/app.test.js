@@ -111,7 +111,7 @@ describe("GET: /api/articles", () => {
         .then(({ body }) => {
           const articles = body.articles;
           expect(body).toHaveProperty("total_count", expect.any(Number));
-          expect(articles).toHaveLength(10);
+          expect(articles).toHaveLength(12);
           expect(articles).toBeSorted("created_at", {
             descending: true,
           });
@@ -182,7 +182,7 @@ describe("GET: /api/articles", () => {
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("article_id", { descending: true });
             expect(firstArticle.article_id).toBe(13);
-            expect(lastArticle.article_id).toBe(4);
+            expect(lastArticle.article_id).toBe(2);
           });
       });
       test("Should still work if sort_by input was wrong", () => {
@@ -228,7 +228,7 @@ describe("GET: /api/articles", () => {
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("created_at", { descending: false });
             expect(firstArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
-            expect(lastArticle.created_at).toBe("2020-10-11T11:24:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-10-18T01:00:00.000Z");
           });
       });
       test("Should still work if the order query was given in lowercase", () => {
@@ -241,7 +241,7 @@ describe("GET: /api/articles", () => {
             const lastArticle = articles[articles.length - 1];
             expect(articles).toBeSorted("created_at", { descending: false });
             expect(firstArticle.created_at).toBe("2020-01-07T14:08:00.000Z");
-            expect(lastArticle.created_at).toBe("2020-10-11T11:24:00.000Z");
+            expect(lastArticle.created_at).toBe("2020-10-18T01:00:00.000Z");
           });
       });
     });

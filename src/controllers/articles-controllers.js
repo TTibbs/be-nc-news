@@ -11,7 +11,7 @@ const { selectUserByUsername } = require("../models/users-models.js");
 const { selectTopicBySlug } = require("../models/topics-models.js");
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order, topic, limit = 10, p = 1 } = req.query;
+  const { sort_by, order, topic, limit = 12, p = 1 } = req.query;
   selectTopicBySlug(topic)
     .then(() => {
       return selectArticles(sort_by, order, topic, limit, p);
@@ -56,8 +56,7 @@ exports.postArticle = (req, res, next) => {
   articleBody.created_now = new Date().toISOString();
   articleBody.votes = 0;
   writeArticle(articleBody)
-    .then((results) => {
-      const newArticle = results;
+    .then((newArticle) => {
       res.status(201).send({ newArticle });
     })
     .catch((err) => {
