@@ -38,6 +38,21 @@ describe("GET: /api/topics", () => {
         });
       });
   });
+  describe("GET: /api/topics/:slug", () => {
+    test("Should return a topic by its slug", async () => {
+      const response = await request(app).get("/api/topics/mitch").expect(200);
+      const { topic } = response.body;
+      expect(topic).toHaveProperty("slug", expect.any(String));
+      expect(topic).toHaveProperty("description", expect.any(String));
+    });
+    test("Should return an error message when slug does not exist", async () => {
+      const response = await request(app)
+        .get("/api/topics/doesnotexist")
+        .expect(404);
+      const { msg } = response.body;
+      expect(msg).toBe("Topic doesn't exist");
+    });
+  });
 });
 
 describe("GET: /api/users", () => {

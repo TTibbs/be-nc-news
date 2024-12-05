@@ -14,7 +14,7 @@ exports.selectTopicBySlug = (topic) => {
       if (rows.length === 0) {
         return Promise.reject({ status: 404, msg: "Topic doesn't exist" });
       }
-      return rows;
+      return rows[0];
     });
 };
 
