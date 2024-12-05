@@ -2,6 +2,7 @@ const {
   selectTopics,
   writeTopic,
   selectTopicBySlug,
+  selectTopicToDelete,
 } = require("../models/topics-models.js");
 
 exports.getTopics = (req, res, next) => {
@@ -29,6 +30,15 @@ exports.postTopic = (req, res, next) => {
   writeTopic(topicBody)
     .then((newTopic) => {
       res.status(201).send({ newTopic });
+    })
+    .catch(next);
+};
+
+exports.deleteTopicBySlug = (req, res, next) => {
+  const { slug } = req.params;
+  selectTopicToDelete(slug)
+    .then(() => {
+      res.status(204).send();
     })
     .catch(next);
 };

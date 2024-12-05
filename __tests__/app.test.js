@@ -964,3 +964,25 @@ describe("DELETE: /api/comments/:comment_id", () => {
     });
   });
 });
+
+describe("DELETE: /api/topics/:slug", () => {
+  test("Should delete a topic by the slug given", () => {
+    return request(app).delete("/api/topics/paper").expect(204);
+  });
+  test("Should delete related articles when a topic is deleted", () => {
+    return request(app)
+      .delete("/api/topics/mitch")
+      .expect(204)
+      .then(() => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).toHaveLength(1);
+          });
+      });
+  });
+  test("Should return a 404 status and error message when the topic slug does not exist", () => {
+    return request(app).delete("/api/topics/doesnotexist").expect(404);
+  });
+});

@@ -38,3 +38,29 @@ exports.writeTopic = (topicBody) => {
     })
     .then(({ rows }) => rows[0]);
 };
+
+exports.selectTopicToDelete = (slug) => {
+  return db
+    .query(
+      `
+      WITH deleted_comments AS (
+        DELETE FROM comments
+        WHERE article_id IN (SELECT article_id FROM articles WHERE topic = $1)
+      ),
+      deleted_articles AS (
+        DELETE FROM articles
+        WHERE topic = $1
+      )
+      DELETE FROM topics
+      WHERE slug = $1
+      RETURNING *;
+      `,
+      [slug]
+    )
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Topic doesn't exist" });
+      }
+      return rows[0];
+    });
+};
