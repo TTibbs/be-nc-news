@@ -6,7 +6,7 @@ const {
 } = require("../controllers/topics-controllers.js");
 
 topicsRouter.get("/", getTopics);
-topicsRouter.get("/topics/:slug", getTopicBySlug);
+topicsRouter.get("/:slug", getTopicBySlug);
 topicsRouter.post("/", postTopic);
 
 module.exports = topicsRouter;
