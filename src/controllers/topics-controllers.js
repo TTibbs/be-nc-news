@@ -1,9 +1,23 @@
-const { selectTopics, writeTopic } = require("../models/topics-models.js");
+const {
+  selectTopics,
+  writeTopic,
+  selectTopicBySlug,
+} = require("../models/topics-models.js");
 
 exports.getTopics = (req, res, next) => {
-  selectTopics().then((topics) => {
-    res.status(200).send({ topics });
-  });
+  selectTopics()
+    .then((topics) => {
+      res.status(200).send({ topics });
+    })
+    .catch(next);
+};
+
+exports.getTopicBySlug = (req, res, next) => {
+  selectTopicBySlug(slug)
+    .then((topic) => {
+      res.status(200).send({ topic });
+    })
+    .catch(next);
 };
 
 exports.postTopic = (req, res, next) => {
