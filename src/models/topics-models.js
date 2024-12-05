@@ -20,12 +20,21 @@ exports.selectTopicBySlug = (topic) => {
 
 exports.writeTopic = (topicBody) => {
   const { slug, description } = topicBody;
-  return db
-    .query(
-      `INSERT INTO topics (slug, description) VALUES ($1, $2) RETURNING *;`,
-      [slug, description]
-    )
-    .then(({ rows }) => {
-      return rows[0];
-    });
+  return this.selectTopicBySlug(slug)
+    .then(() => {
+      return Promise.reject({
+        status: 400,
+        msg: "Topic already exists",
+      });
+    })
+    .catch((err) => {
+      if (err.status === 404) {
+        return db.query(
+          `INSERT INTO topics (slug, description) VALUES ($1, $2) RETURNING *;`,
+          [slug, description]
+        );
+      }
+      throw err;
+    })
+    .then(({ rows }) => rows[0]);
 };

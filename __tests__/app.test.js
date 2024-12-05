@@ -502,6 +502,29 @@ describe("POST: /api/topics", () => {
           expect(errMsg).toBe("Bad request");
         });
     });
+    test("Should not allow a duplicated topic", () => {
+      const topicOne = {
+        slug: "Web Development",
+        description: "How do I center this div?",
+      };
+      const topicTwo = {
+        slug: "Web Development",
+        description: "How do I center this div?",
+      };
+      return request(app)
+        .post("/api/topics")
+        .send(topicOne)
+        .expect(201)
+        .then(() => {
+          return request(app)
+            .post("/api/topics")
+            .send(topicTwo)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).toBe("Topic already exists");
+            });
+        });
+    });
   });
 });
 
@@ -518,7 +541,6 @@ describe("POST: /api/users", () => {
       .send(addedUser)
       .expect(201);
     const { newUser } = response.body;
-    console.log(newUser);
     expect(newUser).toHaveProperty("username", "TTibbs");
     expect(newUser).toHaveProperty("name", "Terry Tibbs");
     expect(newUser).toHaveProperty("avatar_url", expect.any(String));

@@ -8,12 +8,12 @@ exports.getTopics = (req, res, next) => {
 
 exports.postTopic = (req, res, next) => {
   const topicBody = req.body;
+  if (!topicBody.slug || !topicBody.description) {
+    return res.status(400).send({ msg: "Bad request" });
+  }
   writeTopic(topicBody)
-    .then((result) => {
-      const newTopic = result;
+    .then((newTopic) => {
       res.status(201).send({ newTopic });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
