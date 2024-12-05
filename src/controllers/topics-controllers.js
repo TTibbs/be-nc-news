@@ -13,6 +13,7 @@ exports.getTopics = (req, res, next) => {
 };
 
 exports.getTopicBySlug = (req, res, next) => {
+  const { slug } = req.params;
   selectTopicBySlug(slug)
     .then((topic) => {
       res.status(200).send({ topic });
