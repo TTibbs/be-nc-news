@@ -4,6 +4,7 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index.js");
 const endpoints = require("../src/endpoints.json");
+const userModels = require("../src/models/users-models.js");
 require("jest-sorted");
 let test_article_id = 1;
 let test_comment_id = 1;
@@ -74,11 +75,11 @@ describe("GET: /api/users", () => {
   });
 });
 
-describe("GET: /api/users/:username", () => {
+describe("GET: /api/users/:user_id", () => {
   describe("GET: 200", () => {
-    test("Should return a username based on parameter used", () => {
+    test("Should return a user relative to the user_id passed in", () => {
       return request(app)
-        .get("/api/users/icellusedkars")
+        .get("/api/users/2")
         .then(({ body }) => {
           const user = body.user;
           expect(user).toHaveProperty("username", "icellusedkars");
@@ -91,9 +92,9 @@ describe("GET: /api/users/:username", () => {
     });
   });
   describe("GET: 404", () => {
-    test("Should return an error message when username is not found", () => {
+    test("Should return an error message when user_id is not found", () => {
       return request(app)
-        .get("/api/users/Username_doesnt_exist_yet")
+        .get("/api/users/4000")
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).toBe("User does not exist");
@@ -919,6 +920,56 @@ describe("PATCH: /api/comments/:comment_id", () => {
         .then(({ body }) => {
           expect(body.msg).toBe("Article does not exist");
         });
+    });
+  });
+});
+
+describe("PATCH: /api/users/:username", () => {
+  describe("PATCH: 202", () => {
+    test("Should successfully patch the requested users avatar_url", async () => {
+      const user_id = 2;
+      const userPatch = { avatar_url: "testing testing, 1, 2, 3!" };
+      const response = await request(app)
+        .patch(`/api/users/${user_id}`)
+        .send(userPatch)
+        .expect(202);
+      const { patchedUser } = response.body;
+      expect(patchedUser).toHaveProperty("username", "icellusedkars");
+      expect(patchedUser).toHaveProperty("name", "sam");
+      expect(patchedUser).toHaveProperty(
+        "avatar_url",
+        "testing testing, 1, 2, 3!"
+      );
+    });
+    test("Should successfully patch the requested users name", async () => {
+      const user_id = 2;
+      const userPatch = { name: "testing testing, 1, 2, 3!" };
+      const response = await request(app)
+        .patch(`/api/users/${user_id}`)
+        .send(userPatch)
+        .expect(202);
+      const { patchedUser } = response.body;
+      expect(patchedUser).toHaveProperty("username", "icellusedkars");
+      expect(patchedUser).toHaveProperty("name", "testing testing, 1, 2, 3!");
+      expect(patchedUser).toHaveProperty(
+        "avatar_url",
+        "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+      );
+    });
+    test("Should successfully patch multiple user values", async () => {
+      const user_id = 2;
+      const userPatch = {
+        name: "testing123",
+        avatar_url: "testing testing 123",
+      };
+      const response = await request(app)
+        .patch(`/api/users/${user_id}`)
+        .send(userPatch)
+        .expect(202);
+      const { patchedUser } = response.body;
+      expect(patchedUser).toHaveProperty("username", "icellusedkars");
+      expect(patchedUser).toHaveProperty("name", "testing123");
+      expect(patchedUser).toHaveProperty("avatar_url", "testing testing 123");
     });
   });
 });
