@@ -6,17 +6,6 @@ exports.selectUsers = () => {
   });
 };
 
-exports.selectUserById = (username) => {
-  return db
-    .query(`SELECT * FROM users WHERE users.username = $1`, [username])
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "User does not exist" });
-      }
-      return rows[0];
-    });
-};
-
 exports.selectUserByUsername = (username) => {
   return db
     .query(`SELECT * FROM users WHERE username = $1`, [username])
@@ -40,6 +29,17 @@ exports.createNewUser = (addedUser) => {
         const error = new Error("Username already exists");
         error.code = "23505";
         throw error;
+      }
+      return rows[0];
+    });
+};
+
+exports.deleteUser = (username) => {
+  return db
+    .query(`DELETE FROM users WHERE username = $1 RETURNING *`, [username])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "User does not exist" });
       }
       return rows[0];
     });

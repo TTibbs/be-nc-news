@@ -28,7 +28,7 @@ exports.deleteCommentById = (req, res, next) => {
     selectCommentToDelete(comment_id),
   ];
   Promise.all(promises)
-    .then((result) => {
+    .then(() => {
       res.status(204).send();
     })
     .catch((err) => {

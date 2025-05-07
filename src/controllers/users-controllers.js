@@ -1,7 +1,8 @@
 const {
   selectUsers,
-  selectUserById,
+  selectUserByUsername,
   createNewUser,
+  deleteUser,
 } = require("../models/users-models.js");
 
 exports.getUsers = (req, res, next) => {
@@ -14,10 +15,13 @@ exports.getUsers = (req, res, next) => {
     });
 };
 
-exports.getUserById = (req, res, next) => {
+exports.getUserByUsername = (req, res, next) => {
   const { username } = req.params;
-  selectUserById(username)
+  selectUserByUsername(username)
     .then((user) => {
+      if (!user) {
+        return Promise.reject({ status: 404, msg: "User does not exist" });
+      }
       res.status(200).send({ user });
     })
     .catch((err) => {
@@ -37,5 +41,16 @@ exports.postUser = (req, res, next) => {
       } else {
         next(err);
       }
+    });
+};
+
+exports.selectUserToDelete = (req, res, next) => {
+  const { username } = req.params;
+  deleteUser(username)
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch((err) => {
+      next(err);
     });
 };
