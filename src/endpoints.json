@@ -2,178 +2,369 @@
   "GET /api": {
     "description": "serves up a json representation of all the available endpoints of the api"
   },
-  "GET /api/users": {
-    "description": "Returns an array of users with the username, name and avatar url",
-    "exampleResponse": [
-      {
-        "username": "butter_bridge",
-        "name": "jonny",
-        "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
-      },
-      {
+  "users": {
+    "GET /api/users": {
+      "description": "Returns an array of users with the username, name and avatar url",
+      "exampleResponse": [
+        {
+          "username": "butter_bridge",
+          "name": "jonny",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+        },
+        {
+          "username": "icellusedkars",
+          "name": "sam",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        },
+        {
+          "username": "rogersop",
+          "name": "paul",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4"
+        },
+        {
+          "username": "lurker",
+          "name": "do_nothing",
+          "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+        }
+      ]
+    },
+    "GET /api/users/:username": {
+      "description": "returns a username based on the parameter used",
+      "example_input": "/api/users/rogersop",
+      "exampleResponse": {
         "username": "icellusedkars",
         "name": "sam",
         "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
       },
-      {
-        "username": "rogersop",
-        "name": "paul",
-        "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4"
-      },
-      {
-        "username": "lurker",
-        "name": "do_nothing",
-        "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
-      }
-    ]
-  },
-  "GET /api/users/:username": {
-    "description": "returns a username based on the parameter used",
-    "example_input": "/api/users/rogersop",
-    "exampleResponse": {
-      "username": "icellusedkars",
-      "name": "sam",
-      "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
-    }
-  },
-  "GET /api/topics": {
-    "description": "serves an array of all topics",
-    "queries": [],
-    "exampleResponse": {
-      "topics": [{ "slug": "football", "description": "Footie!" }]
-    }
-  },
-  "GET /api/articles": {
-    "description": "serves an array of all articles, limited to a number given, in descending order by default",
-    "sort_queries": [
-      "created_at",
-      "article_id",
-      "title",
-      "topic",
-      "author",
-      "body",
-      "votes",
-      "article_img_url"
-    ],
-    "order_queries": ["ASC", "DESC"],
-    "exampleResponse": {
-      "articles": [
+      "errors": [
         {
-          "title": "Seafood substitutions are increasing",
-          "topic": "cooking",
-          "author": "weegembump",
-          "created_at": "2018-05-30T15:59:13.341Z",
-          "votes": 0,
-          "comment_count": 6
-        }
-      ]
-    }
-  },
-  "GET /api/articles/:article_id": {
-    "description": "returns an object containing the information about the article id passed in",
-    "exampleResponse": {
-      "author": "butter_bridge",
-      "body": "I find this existence challenging",
-      "title": "Living in the shadow of a great man",
-      "article_id": 1,
-      "topic": "mitch",
-      "created_at": "2020-07-09T20:11:00.000Z",
-      "votes": 100,
-      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-      "comment_count": 11
-    }
-  },
-  "GET /api/articles/:article_id/comments": {
-    "description": "returns an array of comments for the given article_id",
-    "example_input": "/api/articles/3/comments",
-    "exampleResponse": {
-      "articles": [
-        {
-          "comment_id": 11,
-          "body": "Ambidextrous marsupial",
-          "article_id": 3,
-          "author": "icellusedkars",
-          "votes": 0,
-          "created_at": "2020-09-19T23:10:00.000Z"
+          "status": 404,
+          "msg": "User does not exist"
         },
         {
-          "comment_id": 10,
-          "body": "git push origin master",
-          "article_id": 3,
-          "author": "icellusedkars",
-          "votes": 0,
-          "created_at": "2020-06-20T07:24:00.000Z"
+          "status": 409,
+          "msg": "Username already exists"
+        }
+      ]
+    },
+    "POST /api/users": {
+      "description": "Creates a new user",
+      "example_input": {
+        "username": "newuser",
+        "name": "New User",
+        "avatar_url": "https://example.com/avatar.jpg"
+      },
+      "exampleResponse": {
+        "username": "newuser",
+        "name": "New User",
+        "avatar_url": "https://example.com/avatar.jpg"
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "No values provided / invalid fields provided"
+        },
+        {
+          "status": 409,
+          "msg": "Username already exists"
+        }
+      ]
+    },
+    "PATCH /api/users/:username": {
+      "description": "patches the given username by increasing it's votes by the given key property",
+      "example_input": { "inc_votes": 10 },
+      "exampleResponse": {
+        "username": "icellusedkars"
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "No values provided / invalid fields provided"
+        },
+        {
+          "status": 404,
+          "msg": "User does not exist"
+        },
+        {
+          "status": 409,
+          "msg": "Username already exists"
+        }
+      ]
+    },
+    "DELETE /api/users/:username": {
+      "description": "Deletes a user by their username",
+      "exampleResponse": {
+        "username": "icellusedkars"
+      },
+      "errors": [
+        {
+          "status": 404,
+          "msg": "User does not exist"
         }
       ]
     }
   },
-  "POST /api/articles": {
-    "description": "Posts an article",
-    "example_input": {
-      "title": "How I became a full stack developer",
-      "topic": "mitch",
-      "author": "lurker",
-      "body": "I found these great people called Northcoders",
-      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
-    }
-  },
-  "POST /api/articles/:article_id/comments": {
-    "description": "posts a new comment to the given article_id",
-    "example_input": {
-      "username": "lurker",
-      "body": "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me."
+  "topics": {
+    "GET /api/topics": {
+      "description": "serves an array of all topics",
+      "queries": [],
+      "exampleResponse": {
+        "topics": [{ "slug": "football", "description": "Footie!" }]
+      }
     },
-    "exampleResponse": {
-      "comment_id": 19,
-      "body": "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-      "article_id": 3,
-      "author": "lurker",
-      "votes": 0,
-      "created_at": "2024-10-16T12:26:31.406Z"
-    }
-  },
-  "POST /api/topics": {
-    "description": "Creates a new topic and posts it to /api/topics",
-    "example_input": {
-      "slug": "topic name here",
-      "description": "description here"
+    "GET /api/topics/:slug": {
+      "description": "serves a topic by slug",
+      "exampleResponse": {
+        "slug": "football",
+        "description": "Footie!"
+      },
+      "errors": [
+        {
+          "status": 404,
+          "msg": "Topic does not exist"
+        }
+      ]
     },
-    "exampleResponse": {
-      "slug": "Web Development",
-      "description": "How do I center this div?"
+    "POST /api/topics": {
+      "description": "Creates a new topic and posts it to /api/topics",
+      "example_input": {
+        "slug": "topic name here",
+        "description": "description here"
+      },
+      "exampleResponse": {
+        "slug": "Web Development",
+        "description": "How do I center this div?"
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "No values provided / invalid fields provided"
+        }
+      ]
+    },
+    "DELETE /api/topics/:slug": {
+      "description": "Deletes a topic by slug",
+      "example_input": "/api/topics/football",
+      "exampleResponse": {
+        "slug": "football"
+      },
+      "errors": [
+        {
+          "status": 404,
+          "msg": "Topic does not exist"
+        }
+      ]
     }
   },
-  "PATCH /api/articles/:article_id": {
-    "description": "patches the given article id by increasing it's votes by the given key property",
-    "example_input": { "inc_votes": 10 },
-    "exampleResponse": {
-      "article_id": 3,
-      "title": "Eight pug gifs that remind me of mitch",
-      "topic": "mitch",
-      "author": "icellusedkars",
-      "body": "some gifs",
-      "created_at": "2020-11-03T09:12:00.000Z",
-      "votes": 10,
-      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+  "articles": {
+    "GET /api/articles": {
+      "description": "serves an array of all articles, limited to a number given, in descending order by default",
+      "sort_queries": [
+        "created_at",
+        "article_id",
+        "title",
+        "topic",
+        "author",
+        "body",
+        "votes",
+        "article_img_url"
+      ],
+      "order_queries": ["ASC", "DESC"],
+      "exampleResponse": {
+        "articles": [
+          {
+            "title": "Seafood substitutions are increasing",
+            "topic": "cooking",
+            "author": "weegembump",
+            "created_at": "2018-05-30T15:59:13.341Z",
+            "votes": 0,
+            "comment_count": 6
+          }
+        ]
+      }
+    },
+    "GET /api/articles/:article_id": {
+      "description": "returns an object containing the information about the article id passed in",
+      "exampleResponse": {
+        "author": "butter_bridge",
+        "body": "I find this existence challenging",
+        "title": "Living in the shadow of a great man",
+        "article_id": 1,
+        "topic": "mitch",
+        "created_at": "2020-07-09T20:11:00.000Z",
+        "votes": 100,
+        "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        "comment_count": 11
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "Invalid article_id"
+        },
+        {
+          "status": 404,
+          "msg": "Article does not exist"
+        }
+      ]
+    },
+    "GET /api/articles/:article_id/comments": {
+      "description": "returns an array of comments for the given article_id",
+      "example_input": "/api/articles/3/comments",
+      "exampleResponse": {
+        "articles": [
+          {
+            "comment_id": 11,
+            "body": "Ambidextrous marsupial",
+            "article_id": 3,
+            "author": "icellusedkars",
+            "votes": 0,
+            "created_at": "2020-09-19T23:10:00.000Z"
+          },
+          {
+            "comment_id": 10,
+            "body": "git push origin master",
+            "article_id": 3,
+            "author": "icellusedkars",
+            "votes": 0,
+            "created_at": "2020-06-20T07:24:00.000Z"
+          }
+        ]
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "Invalid article_id"
+        },
+        {
+          "status": 404,
+          "msg": "Article does not exist"
+        }
+      ]
+    },
+    "POST /api/articles": {
+      "description": "Posts an article",
+      "example_input": {
+        "title": "How I became a full stack developer",
+        "topic": "mitch",
+        "author": "lurker",
+        "body": "I found these great people called Northcoders",
+        "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "No values provided"
+        },
+        {
+          "status": 400,
+          "msg": "Invalid article_id"
+        },
+        {
+          "status": 404,
+          "msg": "Article does not exist"
+        }
+      ]
+    },
+    "POST /api/articles/:article_id/comments": {
+      "description": "posts a new comment to the given article_id",
+      "example_input": {
+        "username": "lurker",
+        "body": "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me."
+      },
+      "exampleResponse": {
+        "comment_id": 19,
+        "body": "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        "article_id": 3,
+        "author": "lurker",
+        "votes": 0,
+        "created_at": "2024-10-16T12:26:31.406Z"
+      }
+    },
+    "PATCH /api/articles/:article_id": {
+      "description": "patches the given article id by increasing it's votes by the given key property",
+      "example_input": { "inc_votes": 10 },
+      "exampleResponse": {
+        "article_id": 3,
+        "title": "Eight pug gifs that remind me of mitch",
+        "topic": "mitch",
+        "author": "icellusedkars",
+        "body": "some gifs",
+        "created_at": "2020-11-03T09:12:00.000Z",
+        "votes": 10,
+        "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      }
+    },
+    "DELETE /api/comments/:comment_id": {
+      "description": "Deletes a comment by its id",
+      "exampleResponse": {
+        "comment_id": 3,
+        "body": "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+        "article_id": 1,
+        "author": "icellusedkars",
+        "votes": 100,
+        "created_at": "2020-03-01T01:13:00.000Z"
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "Invalid comment_id"
+        },
+        {
+          "status": 404,
+          "msg": "Comment does not exist"
+        }
+      ]
+    },
+    "DELETE /api/articles/:article_id": {
+      "description": "Deletes a comment based on its ID",
+      "errors": [
+        {
+          "status": 400,
+          "msg": "Invalid article_id"
+        },
+        {
+          "status": 404,
+          "msg": "Article does not exist"
+        }
+      ]
     }
   },
-  "DELETE /api/comments/:comment_id": {
-    "description": "Deletes a comment by its id",
-    "exampleResponse": {
-      "comment_id": 3,
-      "body": "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
-      "article_id": 1,
-      "author": "icellusedkars",
-      "votes": 100,
-      "created_at": "2020-03-01T01:13:00.000Z"
+  "comments": {
+    "PATCH /api/comments/:comment_id": {
+      "description": "patches the comment and increases or decreases the votes",
+      "example_input": { "inc_votes": 10 },
+      "exampleResponse": {},
+      "errors": [
+        {
+          "status": 400,
+          "msg": "Invalid comment_id / no values provided / invalid fields provided"
+        },
+        {
+          "status": 404,
+          "msg": "Comment does not exist"
+        }
+      ]
+    },
+    "DELETE /api/comments/:comment_id": {
+      "description": "Deletes a comment by its id",
+      "exampleResponse": {
+        "comment_id": 3,
+        "body": "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+        "article_id": 1,
+        "author": "icellusedkars",
+        "votes": 100,
+        "created_at": "2020-03-01T01:13:00.000Z"
+      },
+      "errors": [
+        {
+          "status": 400,
+          "msg": "Invalid comment_id"
+        },
+        {
+          "status": 404,
+          "msg": "Comment does not exist"
+        }
+      ]
     }
-  },
-  "DELETE /api/articles/:article_id": {
-    "description": "Deletes a comment based on its ID"
-  },
-  "PATCH /api/comments/:comment_id": {
-    "description": "patches the comment and increases or decreases the votes",
-    "example_input": { "inc_votes": 10 },
-    "exampleResponse": {}
   }
 }
