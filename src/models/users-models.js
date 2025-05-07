@@ -20,15 +20,24 @@ exports.createNewUser = (addedUser) => {
     .query(
       `INSERT INTO users (username, name, avatar_url)
        VALUES ($1, $2, $3)
-       ON CONFLICT (username) DO NOTHING
        RETURNING *;`,
       [username, name, avatar_url]
     )
     .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+exports.patchUserByUsername = (username, updatedUser) => {
+  const { name, avatar_url } = updatedUser;
+  return db
+    .query(
+      `UPDATE users SET name = $1, avatar_url = $2 WHERE username = $3 RETURNING *`,
+      [name, avatar_url, username]
+    )
+    .then(({ rows }) => {
       if (rows.length === 0) {
-        const error = new Error("Username already exists");
-        error.code = "23505";
-        throw error;
+        return Promise.reject({ status: 404, msg: "User does not exist" });
       }
       return rows[0];
     });

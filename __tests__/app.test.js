@@ -107,6 +107,60 @@ describe("/api/users", () => {
       expect(msg).toBe("Username already exists");
     });
   });
+  describe("PATCH: /api/users/:username", () => {
+    test("Should successfully update a user by the username given", async () => {
+      const userUpdate = {
+        name: "Terry Tibbs",
+        avatar_url: "https://example.com/avatar.jpg",
+      };
+      const response = await request(app)
+        .patch("/api/users/icellusedkars")
+        .send(userUpdate)
+        .expect(200);
+      const { updatedUser } = response.body;
+      console.log(updatedUser);
+      expect(updatedUser).toHaveProperty("username", "icellusedkars");
+      expect(updatedUser).toHaveProperty("name", "Terry Tibbs");
+      expect(updatedUser).toHaveProperty(
+        "avatar_url",
+        "https://example.com/avatar.jpg"
+      );
+    });
+    test("Should return a 400 status code and error message when no valid fields are given", async () => {
+      const userUpdate = {};
+      const response = await request(app)
+        .patch("/api/users/icellusedkars")
+        .send(userUpdate)
+        .expect(400);
+      const { msg } = response.body;
+      expect(msg).toBe("No valid fields to update");
+    });
+    test("Should return a 404 status code and error message when the user username does not exist", async () => {
+      const userUpdate = {
+        name: "Terry Tibbs",
+        avatar_url: "https://example.com/avatar.jpg",
+      };
+      const response = await request(app)
+        .patch("/api/users/doesnotexist")
+        .send(userUpdate)
+        .expect(404);
+      const { msg } = response.body;
+      expect(msg).toBe("User does not exist");
+    });
+    test("Should return a 409 status code and error message when the username already exists", async () => {
+      const userUpdate = {
+        username: "lurker",
+        name: "do_nothing",
+        avatar_url: "https://example.com/avatar.jpg",
+      };
+      const response = await request(app)
+        .patch("/api/users/icellusedkars")
+        .send(userUpdate)
+        .expect(409);
+      const { msg } = response.body;
+      expect(msg).toBe("Username already exists");
+    });
+  });
   describe("DELETE: /api/users/:username", () => {
     test("Should delete a user by the username given", async () => {
       const response = await request(app)
