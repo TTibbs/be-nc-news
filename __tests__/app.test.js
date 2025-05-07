@@ -9,7 +9,7 @@ require("jest-sorted");
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
-describe("/api", () => {
+describe("API Endpoints", () => {
   test("Should return with endpoints that are valid paths", async () => {
     const response = await request(app).get("/api").expect(200);
     const { body } = response;
@@ -19,7 +19,7 @@ describe("/api", () => {
   });
 });
 
-describe("/api/users", () => {
+describe("Users Endpoints", () => {
   describe("GET: /api/users", () => {
     test("Should return an array of users when this endpoint is navigated to", () => {
       return request(app)
@@ -176,7 +176,7 @@ describe("/api/users", () => {
   });
 });
 
-describe("/api/topics", () => {
+describe("Topics Endpoints", () => {
   describe("GET: /api/topics", () => {
     test("Should return an array of topics", async () => {
       const response = await request(app).get("/api/topics").expect(200);
@@ -263,7 +263,7 @@ describe("/api/topics", () => {
   });
 });
 
-describe("/api/articles", () => {
+describe("Articles Endpoints", () => {
   describe("GET: /api/articles", () => {
     test("Should return the articles array sorted in descending order and without a body property", async () => {
       const response = await request(app).get("/api/articles").expect(200);
@@ -608,235 +608,254 @@ describe("/api/articles", () => {
   });
 });
 
-describe("/api/comments/:comment_id", () => {
-  describe("GET: /api/articles/:article_id/comments", () => {
-    test("Should return an empty array of comments when the given article_id has no comments", async () => {
-      const response = await request(app)
-        .get(`/api/articles/2/comments`)
-        .expect(200);
-      const { articleComments } = response.body;
-      expect(articleComments).toEqual([]);
+describe("Comments Endpoints", () => {
+  describe("GET: /api/comments", () => {
+    test("Should return an array of comments", async () => {
+      const response = await request(app).get("/api/comments").expect(200);
+      const { comments } = response.body;
+      expect(comments).toBeInstanceOf(Array);
+      expect(comments.length).toBeGreaterThan(0);
     });
-    test("Should return an array of comments when the given article_id has comments", async () => {
-      const response = await request(app)
-        .get(`/api/articles/1/comments`)
-        .expect(200);
-      const { articleComments } = response.body;
-      expect(articleComments).toHaveLength(11);
-      articleComments.forEach((articleComment) => {
-        expect(articleComment).toHaveProperty("comment_id", expect.any(Number));
-        expect(articleComment).toHaveProperty("body", expect.any(String));
-        expect(articleComment).toHaveProperty("article_id", expect.any(Number));
-        expect(articleComment).toHaveProperty("author", expect.any(String));
-        expect(articleComment).toHaveProperty("votes", expect.any(Number));
-        expect(articleComment).toHaveProperty("created_at", expect.any(String));
+  });
+  describe("/api/comments/:comment_id", () => {
+    describe("GET: /api/articles/:article_id/comments", () => {
+      test("Should return an empty array of comments when the given article_id has no comments", async () => {
+        const response = await request(app)
+          .get(`/api/articles/2/comments`)
+          .expect(200);
+        const { articleComments } = response.body;
+        expect(articleComments).toEqual([]);
+      });
+      test("Should return an array of comments when the given article_id has comments", async () => {
+        const response = await request(app)
+          .get(`/api/articles/1/comments`)
+          .expect(200);
+        const { articleComments } = response.body;
+        expect(articleComments).toHaveLength(11);
+        articleComments.forEach((articleComment) => {
+          expect(articleComment).toHaveProperty(
+            "comment_id",
+            expect.any(Number)
+          );
+          expect(articleComment).toHaveProperty("body", expect.any(String));
+          expect(articleComment).toHaveProperty(
+            "article_id",
+            expect.any(Number)
+          );
+          expect(articleComment).toHaveProperty("author", expect.any(String));
+          expect(articleComment).toHaveProperty("votes", expect.any(Number));
+          expect(articleComment).toHaveProperty(
+            "created_at",
+            expect.any(String)
+          );
+        });
+      });
+      test("Should return the comments array in descending order", async () => {
+        const response = await request(app)
+          .get(`/api/articles/1/comments`)
+          .expect(200);
+        const { articleComments } = response.body;
+        expect(articleComments).toBeSorted("created_at", {
+          descending: true,
+        });
+      });
+      test("Should return an error message when article_id is invalid data type", async () => {
+        const response = await request(app)
+          .get(`/api/articles/notAnId/comments`)
+          .expect(400);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return an error message when article_id does not exist", async () => {
+        const response = await request(app)
+          .get(`/api/articles/1234/comments`)
+          .expect(404);
+        const { msg } = response.body;
+        expect(msg).toBe("Article does not exist");
       });
     });
-    test("Should return the comments array in descending order", async () => {
-      const response = await request(app)
-        .get(`/api/articles/1/comments`)
-        .expect(200);
-      const { articleComments } = response.body;
-      expect(articleComments).toBeSorted("created_at", {
-        descending: true,
+    describe("PATCH: /api/comments/:comment_id", () => {
+      test("Should increase the votes on a comment", async () => {
+        const updatedVotes = { inc_votes: 10 };
+        const response = await request(app)
+          .patch(`/api/comments/1`)
+          .send(updatedVotes);
+        const { updatedComment } = response.body;
+        expect(updatedComment).toHaveProperty("comment_id", 1);
+        expect(updatedComment).toHaveProperty(
+          "body",
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+        );
+        expect(updatedComment).toHaveProperty("votes", 26);
+      });
+      test("Should decrease the votes on a comment", async () => {
+        const updatedVotes = { inc_votes: -10 };
+        const response = await request(app)
+          .patch(`/api/comments/1`)
+          .send(updatedVotes);
+        const { updatedComment } = response.body;
+        expect(updatedComment).toHaveProperty("comment_id", 1);
+        expect(updatedComment).toHaveProperty(
+          "body",
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+        );
+        expect(updatedComment).toHaveProperty("votes", 6);
+      });
+      test("Should return a 400 status code and an error message when the key is invalid", async () => {
+        const updatedVotes = { wrong_key: 10 };
+        const response = await request(app)
+          .patch(`/api/comments/1`)
+          .expect(400)
+          .send(updatedVotes);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return a 400 status code and an error message when the given key/prop is missing", async () => {
+        const updatedVotes = "10";
+        const response = await request(app)
+          .patch(`/api/comments/1`)
+          .expect(400)
+          .send(updatedVotes);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return a 400 status code and an error message when the given comment id is invalid", async () => {
+        const updatedVotes = { inc_votes: 10 };
+        const response = await request(app)
+          .patch("/api/comments/notAnId")
+          .expect(400)
+          .send(updatedVotes);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return a 404 status code and an error message when the given comment id doesn't exist", async () => {
+        const updatedVotes = { inc_votes: 10 };
+        const response = await request(app)
+          .patch(`/api/comments/1000`)
+          .expect(404)
+          .send(updatedVotes);
+        const { msg } = response.body;
+        expect(msg).toBe("Comment does not exist");
       });
     });
-    test("Should return an error message when article_id is invalid data type", async () => {
-      const response = await request(app)
-        .get(`/api/articles/notAnId/comments`)
-        .expect(400);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
+    describe("POST: /api/articles/:article_id/comments", () => {
+      test("Should successfully post a new comment to the given article id", async () => {
+        const addedComment = {
+          username: "lurker",
+          body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        };
+        const comment = {
+          body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+          votes: 123,
+          author: "lurker",
+          article_id: 3,
+        };
+        const response = await request(app)
+          .post(`/api/articles/3/comments`)
+          .send(addedComment)
+          .expect(201);
+        const { newComment } = response.body;
+        expect(newComment.body).toBe(comment.body);
+        expect(newComment.comment_id).toBe(19);
+        expect(newComment.article_id).toBe(3);
+        expect(newComment.author).toBe("lurker");
+        expect(newComment).toHaveProperty("created_at");
+        expect(newComment).toHaveProperty("votes");
+      });
+      test("Should successfully post a new comment when it has extra properties", async () => {
+        const addedComment = {
+          username: "lurker",
+          body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+          author: "lurker",
+          name: "Please work",
+        };
+        const comment = {
+          body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+          votes: 123,
+          article_id: 3,
+        };
+        const response = await request(app)
+          .post(`/api/articles/3/comments`)
+          .send(addedComment)
+          .expect(201);
+        const { newComment } = response.body;
+        expect(newComment.body).toBe(comment.body);
+        expect(newComment.comment_id).toBe(19);
+        expect(newComment.article_id).toBe(3);
+        expect(newComment).toHaveProperty("created_at");
+        expect(newComment).toHaveProperty("votes");
+      });
+      test("Should return an error message when the article_id type is invalid", async () => {
+        const addedComment = {
+          username: "lurker",
+          body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        };
+        const response = await request(app)
+          .post("/api/articles/notAnId/comments")
+          .send(addedComment)
+          .expect(400);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return an error message when there is no given properties", async () => {
+        const addedComment = {};
+        const response = await request(app)
+          .post(`/api/articles/3/comments`)
+          .send(addedComment)
+          .expect(400);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return an error message when article id does not exist", async () => {
+        const addedComment = {
+          username: "notValid",
+          body: "This should not work",
+        };
+        const response = await request(app)
+          .post(`/api/articles/1000/comments`)
+          .send(addedComment)
+          .expect(404);
+        const { msg } = response.body;
+        expect(msg).toBe("Article does not exist");
+      });
+      test("Should return an error message when article id does not exist", async () => {
+        const addedComment = {
+          username: "lurker",
+          body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
+        };
+        const response = await request(app)
+          .post("/api/articles/1000/comments")
+          .send(addedComment)
+          .expect(404);
+        const { msg } = response.body;
+        expect(msg).toBe("Article does not exist");
+      });
     });
-    test("Should return an error message when article_id does not exist", async () => {
-      const response = await request(app)
-        .get(`/api/articles/1234/comments`)
-        .expect(404);
-      const { msg } = response.body;
-      expect(msg).toBe("Article does not exist");
-    });
-  });
-  describe("PATCH: /api/comments/:comment_id", () => {
-    test("Should increase the votes on a comment", async () => {
-      const updatedVotes = { inc_votes: 10 };
-      const response = await request(app)
-        .patch(`/api/comments/1`)
-        .send(updatedVotes);
-      const { updatedComment } = response.body;
-      expect(updatedComment).toHaveProperty("comment_id", 1);
-      expect(updatedComment).toHaveProperty(
-        "body",
-        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
-      );
-      expect(updatedComment).toHaveProperty("votes", 26);
-    });
-    test("Should decrease the votes on a comment", async () => {
-      const updatedVotes = { inc_votes: -10 };
-      const response = await request(app)
-        .patch(`/api/comments/1`)
-        .send(updatedVotes);
-      const { updatedComment } = response.body;
-      expect(updatedComment).toHaveProperty("comment_id", 1);
-      expect(updatedComment).toHaveProperty(
-        "body",
-        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
-      );
-      expect(updatedComment).toHaveProperty("votes", 6);
-    });
-    test("Should return a 400 status code and an error message when the key is invalid", async () => {
-      const updatedVotes = { wrong_key: 10 };
-      const response = await request(app)
-        .patch(`/api/comments/1`)
-        .expect(400)
-        .send(updatedVotes);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
-    });
-    test("Should return a 400 status code and an error message when the given key/prop is missing", async () => {
-      const updatedVotes = "10";
-      const response = await request(app)
-        .patch(`/api/comments/1`)
-        .expect(400)
-        .send(updatedVotes);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
-    });
-    test("Should return a 400 status code and an error message when the given comment id is invalid", async () => {
-      const updatedVotes = { inc_votes: 10 };
-      const response = await request(app)
-        .patch("/api/comments/notAnId")
-        .expect(400)
-        .send(updatedVotes);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
-    });
-    test("Should return a 404 status code and an error message when the given comment id doesn't exist", async () => {
-      const updatedVotes = { inc_votes: 10 };
-      const response = await request(app)
-        .patch(`/api/comments/1000`)
-        .expect(404)
-        .send(updatedVotes);
-      const { msg } = response.body;
-      expect(msg).toBe("Comment does not exist");
-    });
-  });
-  describe("POST: /api/articles/:article_id/comments", () => {
-    test("Should successfully post a new comment to the given article id", async () => {
-      const addedComment = {
-        username: "lurker",
-        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-      };
-      const comment = {
-        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-        votes: 123,
-        author: "lurker",
-        article_id: 3,
-      };
-      const response = await request(app)
-        .post(`/api/articles/3/comments`)
-        .send(addedComment)
-        .expect(201);
-      const { newComment } = response.body;
-      expect(newComment.body).toBe(comment.body);
-      expect(newComment.comment_id).toBe(19);
-      expect(newComment.article_id).toBe(3);
-      expect(newComment.author).toBe("lurker");
-      expect(newComment).toHaveProperty("created_at");
-      expect(newComment).toHaveProperty("votes");
-    });
-    test("Should successfully post a new comment when it has extra properties", async () => {
-      const addedComment = {
-        username: "lurker",
-        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-        author: "lurker",
-        name: "Please work",
-      };
-      const comment = {
-        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-        votes: 123,
-        article_id: 3,
-      };
-      const response = await request(app)
-        .post(`/api/articles/3/comments`)
-        .send(addedComment)
-        .expect(201);
-      const { newComment } = response.body;
-      expect(newComment.body).toBe(comment.body);
-      expect(newComment.comment_id).toBe(19);
-      expect(newComment.article_id).toBe(3);
-      expect(newComment).toHaveProperty("created_at");
-      expect(newComment).toHaveProperty("votes");
-    });
-    test("Should return an error message when the article_id type is invalid", async () => {
-      const addedComment = {
-        username: "lurker",
-        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-      };
-      const response = await request(app)
-        .post("/api/articles/notAnId/comments")
-        .send(addedComment)
-        .expect(400);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
-    });
-    test("Should return an error message when there is no given properties", async () => {
-      const addedComment = {};
-      const response = await request(app)
-        .post(`/api/articles/3/comments`)
-        .send(addedComment)
-        .expect(400);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
-    });
-    test("Should return an error message when article id does not exist", async () => {
-      const addedComment = {
-        username: "notValid",
-        body: "This should not work",
-      };
-      const response = await request(app)
-        .post(`/api/articles/1000/comments`)
-        .send(addedComment)
-        .expect(404);
-      const { msg } = response.body;
-      expect(msg).toBe("Article does not exist");
-    });
-    test("Should return an error message when article id does not exist", async () => {
-      const addedComment = {
-        username: "lurker",
-        body: "I agree, centering divs are probably the worst ticket to get given as backend dev, I asked my friend to confirm for me.",
-      };
-      const response = await request(app)
-        .post("/api/articles/1000/comments")
-        .send(addedComment)
-        .expect(404);
-      const { msg } = response.body;
-      expect(msg).toBe("Article does not exist");
-    });
-  });
-  describe("DELETE: /api/comments/:comment_id", () => {
-    test("Should successfully delete the comment with the id given", async () => {
-      await request(app).delete(`/api/comments/3`).expect(204);
-      const response = await request(app)
-        .get("/api/articles/3/comments")
-        .expect(200);
-      const { articleComments } = response.body;
-      expect(articleComments).not.toContainEqual(
-        expect.objectContaining({ comment_id: 3 })
-      );
-    });
-    test("Should return a 400 status code and an error message when the comment id is an invalid type", async () => {
-      const response = await request(app)
-        .delete("/api/comments/notAnId")
-        .expect(400);
-      const { msg } = response.body;
-      expect(msg).toBe("Bad request");
-    });
-    test("Should return a 404 status code and an error message when the comment id does not exist", async () => {
-      const response = await request(app)
-        .delete(`/api/comments/9999`)
-        .expect(404);
-      const { msg } = response.body;
-      expect(msg).toBe("Comment does not exist");
+    describe("DELETE: /api/comments/:comment_id", () => {
+      test("Should successfully delete the comment with the id given", async () => {
+        await request(app).delete(`/api/comments/3`).expect(204);
+        const response = await request(app)
+          .get("/api/articles/3/comments")
+          .expect(200);
+        const { articleComments } = response.body;
+        expect(articleComments).not.toContainEqual(
+          expect.objectContaining({ comment_id: 3 })
+        );
+      });
+      test("Should return a 400 status code and an error message when the comment id is an invalid type", async () => {
+        const response = await request(app)
+          .delete("/api/comments/notAnId")
+          .expect(400);
+        const { msg } = response.body;
+        expect(msg).toBe("Bad request");
+      });
+      test("Should return a 404 status code and an error message when the comment id does not exist", async () => {
+        const response = await request(app)
+          .delete(`/api/comments/9999`)
+          .expect(404);
+        const { msg } = response.body;
+        expect(msg).toBe("Comment does not exist");
+      });
     });
   });
 });

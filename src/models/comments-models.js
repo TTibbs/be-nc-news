@@ -1,5 +1,14 @@
 const db = require("../../db/connection.js");
 
+exports.selectComments = () => {
+  return db.query(`SELECT * FROM comments`).then(({ rows }) => {
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Comments do not exist" });
+    }
+    return rows;
+  });
+};
+
 exports.selectCommentToPatchById = (inc_votes, comment_id) => {
   return db
     .query(
