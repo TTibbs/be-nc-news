@@ -118,7 +118,6 @@ describe("/api/users", () => {
         .send(userUpdate)
         .expect(200);
       const { updatedUser } = response.body;
-      console.log(updatedUser);
       expect(updatedUser).toHaveProperty("username", "icellusedkars");
       expect(updatedUser).toHaveProperty("name", "Terry Tibbs");
       expect(updatedUser).toHaveProperty(
