@@ -4,6 +4,8 @@ const {
   createNewUser,
   patchUserByUsername,
   deleteUser,
+  getUserCommentVotes,
+  getUserArticleVotes,
 } = require("../models/users-models.js");
 
 exports.getUsers = (req, res, next) => {
@@ -78,6 +80,40 @@ exports.selectUserToDelete = (req, res, next) => {
   deleteUser(username)
     .then(() => {
       res.status(204).send();
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUserCommentVotes = (req, res, next) => {
+  const { username } = req.params;
+  selectUserByUsername(username)
+    .then((user) => {
+      if (!user) {
+        return Promise.reject({ status: 404, msg: "User does not exist" });
+      }
+      return getUserCommentVotes(username);
+    })
+    .then(({ total_votes }) => {
+      res.status(200).send({ total_votes });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUserArticleVotes = (req, res, next) => {
+  const { username } = req.params;
+  selectUserByUsername(username)
+    .then((user) => {
+      if (!user) {
+        return Promise.reject({ status: 404, msg: "User does not exist" });
+      }
+      return getUserArticleVotes(username);
+    })
+    .then(({ total_votes }) => {
+      res.status(200).send({ total_votes });
     })
     .catch((err) => {
       next(err);

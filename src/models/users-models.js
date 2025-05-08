@@ -53,3 +53,32 @@ exports.deleteUser = (username) => {
       return rows[0];
     });
 };
+
+exports.getUserCommentVotes = (username) => {
+  return db
+    .query(
+      `SELECT CAST(SUM(votes) AS INTEGER) as total_votes 
+       FROM comments 
+       WHERE author = $1`,
+      [username]
+    )
+    .then(({ rows }) => {
+      if (!rows[0].total_votes) {
+        return Promise.reject({ status: 404, msg: "User has no comments" });
+      }
+      return rows[0];
+    });
+};
+
+exports.getUserArticleVotes = (username) => {
+  return db
+    .query(
+      `SELECT CAST(SUM(votes) AS INTEGER) as total_votes 
+       FROM articles 
+       WHERE author = $1`,
+      [username]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};

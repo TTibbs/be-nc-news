@@ -57,6 +57,40 @@ describe("Users Endpoints", () => {
       expect(msg).toBe("User does not exist");
     });
   });
+  describe("GET: /api/users/:username/commentvotes", () => {
+    test("Should return an array of comments for a user", async () => {
+      const response = await request(app)
+        .get("/api/users/icellusedkars/commentvotes")
+        .expect(200);
+      const { total_votes } = response.body;
+      expect(typeof total_votes).toBe("number");
+      expect(total_votes).toBe(36);
+    });
+    test("Should return a 404 status and error message when the user username does not exist", async () => {
+      const response = await request(app)
+        .get("/api/users/doesnotexist/commentvotes")
+        .expect(404);
+      const { msg } = response.body;
+      expect(msg).toBe("User does not exist");
+    });
+  });
+  describe("GET: /api/users/:username/articlevotes", () => {
+    test("Should return the total votes for a user's articles", async () => {
+      const response = await request(app)
+        .get("/api/users/butter_bridge/articlevotes")
+        .expect(200);
+      const { total_votes } = response.body;
+      expect(typeof total_votes).toBe("number");
+      expect(total_votes).toBe(110);
+    });
+    test("Should return a 404 status and error message when the user username does not exist", async () => {
+      const response = await request(app)
+        .get("/api/users/doesnotexist/articlevotes")
+        .expect(404);
+      const { msg } = response.body;
+      expect(msg).toBe("User does not exist");
+    });
+  });
   describe("POST: /api/users", () => {
     test("Should successfully create a new user", async () => {
       const addedUser = {
@@ -423,8 +457,8 @@ describe("Articles Endpoints", () => {
         const { articles } = response.body;
         const firstArticle = articles[0];
         const lastArticle = articles[articles.length - 1];
-        expect(firstArticle.votes).toBe(0);
-        expect(lastArticle.votes).toBe(0);
+        expect(firstArticle.votes).toBe(-10);
+        expect(lastArticle.votes).toBe(42);
         expect(articles).toBeSorted("votes", { descending: false });
       });
       test("Should still work if the sort by query is uppercase and order query is lowercase", async () => {
@@ -434,8 +468,8 @@ describe("Articles Endpoints", () => {
         const { articles } = response.body;
         const firstArticle = articles[0];
         const lastArticle = articles[articles.length - 1];
-        expect(firstArticle.votes).toBe(0);
-        expect(lastArticle.votes).toBe(0);
+        expect(firstArticle.votes).toBe(-10);
+        expect(lastArticle.votes).toBe(42);
         expect(articles).toBeSorted("votes", { descending: false });
       });
       test("Should return an error message if sort query and order query isn't valid", async () => {
@@ -593,7 +627,7 @@ describe("Articles Endpoints", () => {
       expect(updatedArticle.author).toBe("icellusedkars");
       expect(updatedArticle.body).toBe("some gifs");
       expect(updatedArticle.created_at).toBe("2020-11-03T09:12:00.000Z");
-      expect(updatedArticle.votes).toBe(10);
+      expect(updatedArticle.votes).toBe(31);
       expect(updatedArticle.article_img_url).toBe(
         "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
       );
