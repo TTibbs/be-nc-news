@@ -39,6 +39,21 @@ exports.writeTopic = (topicBody) => {
     .then(({ rows }) => rows[0]);
 };
 
+exports.patchTopicBySlug = (slug, topicBody) => {
+  const { description } = topicBody;
+  return db
+    .query(`UPDATE topics SET description = $1 WHERE slug = $2 RETURNING *;`, [
+      description,
+      slug,
+    ])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Topic doesn't exist" });
+      }
+      return rows[0];
+    });
+};
+
 exports.selectTopicToDelete = (slug) => {
   return db
     .query(

@@ -247,6 +247,49 @@ describe("Topics Endpoints", () => {
       expect(msg).toBe("Topic already exists");
     });
   });
+  describe("PATCH: /api/topics/:slug", () => {
+    test("Should update a topic by the slug given", async () => {
+      const topicUpdate = {
+        description: "Updated description",
+      };
+      const response = await request(app)
+        .patch("/api/topics/mitch")
+        .send(topicUpdate)
+        .expect(200);
+      const { updatedTopic } = response.body;
+      expect(updatedTopic).toHaveProperty("slug", "mitch");
+      expect(updatedTopic).toHaveProperty("description", "Updated description");
+    });
+    test("Should return a 400 status and error message when no valid fields are given", async () => {
+      const updatedTopic = {};
+      const response = await request(app)
+        .patch("/api/topics/mitch")
+        .send(updatedTopic)
+        .expect(400);
+      const { msg } = response.body;
+      expect(msg).toBe("No description provided");
+    });
+    test("Should return a 400 status and error message when description is not provided", async () => {
+      const topicUpdate = {};
+      const response = await request(app)
+        .patch("/api/topics/mitch")
+        .send(topicUpdate)
+        .expect(400);
+      const { msg } = response.body;
+      expect(msg).toBe("No description provided");
+    });
+    test("Should return a 404 status and error message when the topic slug does not exist", async () => {
+      const updatedTopic = {
+        description: "Updated description",
+      };
+      const response = await request(app)
+        .patch("/api/topics/doesnotexist")
+        .send(updatedTopic)
+        .expect(404);
+      const { msg } = response.body;
+      expect(msg).toBe("Topic doesn't exist");
+    });
+  });
   describe("DELETE: /api/topics/:slug", () => {
     test("Should delete a topic by the slug given", () => {
       return request(app).delete("/api/topics/paper").expect(204);
