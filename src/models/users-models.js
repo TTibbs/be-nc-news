@@ -63,10 +63,7 @@ exports.getUserCommentVotes = (username) => {
       [username]
     )
     .then(({ rows }) => {
-      if (!rows[0].total_votes) {
-        return Promise.reject({ status: 404, msg: "User has no comments" });
-      }
-      return rows[0];
+      return { total_votes: rows[0].total_votes || 0 };
     });
 };
 
@@ -79,6 +76,6 @@ exports.getUserArticleVotes = (username) => {
       [username]
     )
     .then(({ rows }) => {
-      return rows[0];
+      return { total_votes: rows[0].total_votes || 0 };
     });
 };
